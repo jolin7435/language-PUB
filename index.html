@@ -4,76 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>今日小考題</title>
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="icon" type="image/png" href="icon.png">
     <style>
-        /* 請保留你原本的 CSS，這裡僅提供結構建議 */
-        body { font-family: sans-serif; padding: 20px; background-color: #fdfaf5; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
-        .option-btn { display: block; width: 100%; padding: 15px; margin-bottom: 10px; border: none; border-radius: 10px; background: #c6a782; color: white; cursor: pointer; }
-        .correct { background-color: #6B8E23 !important; }
-        .wrong { background-color: #CD5C5C !important; }
-        <style>
-    /* 調整題目卡片內容置中 */
-    #quiz-word { 
-        text-align: center; 
-        font-size: 1.5rem; 
-        font-weight: bold;
-        padding: 20px; 
-    }
-    
-    /* 調整選項按鈕內容置中 */
-    .option-btn { 
-        display: block; 
-        width: 100%; 
-        padding: 15px; 
-        margin-bottom: 10px; 
-        border: none; 
-        border-radius: 10px; 
-        background: #c6a782; 
-        color: white; 
-        cursor: pointer;
-        text-align: center; /* 選項文字也置中 */
-    }
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            padding: 20px; 
+            background-color: #fdfbf7; /* 截圖背景色 */
+            color: #4a4a4a;
+            max-width: 500px;
+            margin: auto;
+        }
+        h2 { text-align: center; color: #5d4d3c; }
+        
+        .card { 
+            background: #fdf5e6; /* 卡片背景色 */
+            padding: 30px; 
+            border-radius: 25px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border: 1px solid #eaddca;
+        }
+
+        #quiz-word { 
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem; 
+            font-weight: bold;
+            color: #5d4d3c;
+        }
+
+        .option-btn { 
+            display: block; 
+            width: 100%; 
+            padding: 18px; 
+            margin-bottom: 15px; 
+            border: none; 
+            border-radius: 15px; 
+            background: #dccab2; /* 選項顏色 */
+            color: #5d4d3c; 
+            font-size: 1.1rem;
+            cursor: pointer; 
+            transition: 0.3s;
+        }
+        .option-btn:hover { background: #c5b096; }
+
+        .nav-container { display: flex; justify-content: space-between; margin-top: 20px; }
+        .nav-btn { padding: 10px 20px; border-radius: 10px; border: none; background: #7d6955; color: white; cursor: pointer; }
+
+        /* 進度條樣式 */
+        .progress-wrapper { display: flex; align-items: center; gap: 10px; margin: 20px 0; }
+        .progress-bar-bg { flex-grow: 1; background: #eaddca; height: 12px; border-radius: 6px; overflow: hidden; }
+        .progress-bar-fill { background: #7d6955; height: 100%; width: 0%; }
     </style>
 </head>
 <body>
 
-    <h2 id="main-title">今日小考題</h2>
+    <h2>今日小考題</h2>
     
     <div id="quiz-area">
-        <div id="quiz-counter">載入中...</div>
-        <div class="card" id="quiz-word">隨機題目生成中...</div>
-        <div id="quiz-reading" style="display:none; color: gray; margin-bottom: 10px;"></div>
+        <div id="quiz-counter" style="text-align:center; margin-bottom: 10px;">題目 1/10</div>
+        <div class="card" id="quiz-word">載入中...</div>
         
         <div id="options-container">
-            <button class="option-btn" onclick="checkAnswer(0)">選項 1</button>
-            <button class="option-btn" onclick="checkAnswer(1)">選項 2</button>
-            <button class="option-btn" onclick="checkAnswer(2)">選項 3</button>
-            <button class="option-btn" onclick="checkAnswer(3)">選項 4</button>
-        </div>
+            </div>
 
-        <div id="explanation-card" class="card" style="display:none;">
-            <div id="result-status"></div>
-            <p id="explanation-text"></p>
-            <p id="translation-text"></p>
-            <p id="grammar-text"></p>
-        </div>
-
-        <div id="nav-container" style="display:none; justify-content: space-between;">
-            <button onclick="prevQuiz()">⬅️ 上一題</button>
-            <button id="next-btn" onclick="nextQuiz()">下一題 ➡️</button>
+        <div class="nav-container" id="nav-container">
+            <button class="nav-btn" onclick="prevQuiz()">⬅️ 上一題</button>
+            <button class="nav-btn" onclick="nextQuiz()">下一題 ➡️</button>
         </div>
     </div>
 
     <div id="result-card" class="card" style="display:none;">
         <h3>測驗總結</h3>
-        <p id="score-text"></p>
-        <div style="background:#eee; height:20px; border-radius:10px;">
-            <div id="progress-bar" style="background:#6B8E23; height:100%; width:0%; border-radius:10px;"></div>
+        <p id="score-text">答對率：0%</p>
+        <div class="progress-wrapper">
+            <span>等級</span>
+            <div class="progress-bar-bg"><div id="progress-bar" class="progress-bar-fill"></div></div>
+            <span>N4</span>
         </div>
         <p id="summary-text"></p>
-        <button onclick="resetQuiz()">重新開始測驗</button>
+        <button class="nav-btn" onclick="location.reload()">重新開始</button>
     </div>
 
     <script src="script.js"></script>
