@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Daily Language Agent</title>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- App Header -->
+    <header class="bg-white border-b border-slate-200 py-4 px-6 sticky top-0 shadow-sm z-10">
+        <h1 class="text-xl font-bold text-indigo-600 text-center tracking-wide">📅 今日語言微學習</h1>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-5 space-y-6 max-w-md mx-auto w-full">
+        
+        <!-- 單字卡區塊 -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-3">
+            <span class="text-xs font-semibold bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full">每日核心單字</span>
+            <div class="pt-2">
+                <h2 id="word" class="text-3xl font-extrabold text-slate-900">載入中...</h2>
+                <p id="reading" class="text-sm text-slate-400 mt-1"></p>
+            </div>
+            <p id="meaning" class="text-lg text-slate-700 font-medium pt-2 border-t border-slate-100"></p>
+            <p id="example" class="text-sm text-slate-500 italic bg-slate-50 p-3 rounded-lg mt-2"></p>
+        </div>
+
+        <!-- 小考題區塊 -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
+            <span class="text-xs font-semibold bg-amber-50 text-amber-600 px-2.5 py-1 rounded-full">🎯 今日挑戰</span>
+            <p id="question" class="text-base font-bold text-slate-800 pt-2"></p>
+            
+            <!-- 選項按鈕容器 -->
+            <div id="options-container" class="grid grid-cols-1 gap-2 pt-2">
+                <!-- 由 JavaScript 動態產生 -->
+            </div>
+
+            <!-- 解析區塊（預設隱藏） -->
+            <div id="explanation-box" class="hidden bg-emerald-50 text-emerald-900 p-4 rounded-xl space-y-2 border border-emerald-100">
+                <p class="font-bold text-sm">💡 老師解析：</p>
+                <p id="explanation" class="text-sm"></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-4 text-xs text-slate-400">
+        Powered by GitHub Pages & Gemini
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
