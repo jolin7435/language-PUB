@@ -1,71 +1,103 @@
 let quizData = [];
 let currentIndex = 0;
 let correctCount = 0;
-let averageDifficulty = 5;
-let hasAnswered = false;
+let userAnswers = {}; // 記錄使用者的答題狀態
 let quizSummary = "";
+let averageDifficulty = 5;
 
 window.onload = function() {
     fetch('today.json?t=' + new Date().getTime())
         .then(response => response.json())
         .then(data => {
-            quizData = data.quiz; 
+            quizData = data.quiz;
             quizSummary = data.summary;
             averageDifficulty = data.average_difficulty;
             currentIndex = 0;
+            correctCount = 0;
+            userAnswers = {};
             showQuiz(currentIndex);
         })
         .catch(error => {
             console.error('讀取失敗:', error);
-            document.getElementById('quiz-word').innerText = "考題載入失敗，請稍後再試";
+            document.getElementById('quiz-word').innerText = "考題載入失敗，請檢查 JSON 格式";
         });
 };
 
 function showQuiz(index) {
-    if (!quizData || quizData.length === 0) return;
-    hasAnswered = false;
     const currentQuiz = quizData[index];
+    const quizWord = document.getElementById('quiz-word');
+    
+    // 設定題目文字與對齊方式 (根據 JSON 中的 alignment)
+    quizWord.innerText = currentQuiz.word;
+    quizWord.style.textAlign = currentQuiz.alignment || 'center'; 
 
+    // 設定題目計數器
     document.getElementById('quiz-counter').innerText = `[${currentQuiz.type}] ${index + 1} / ${quizData.length}`;
-    
-    // 顯示題目
-    document.getElementById('quiz-word').innerHTML = currentQuiz.word.replace(/\n/g, '<br>');
-    
-    // 判斷是否顯示讀音：漢字題或讀音與題目相同者，隱藏讀音以防破題
-    const hasKanji = /[\u4e00-\u9faf]/.test(currentQuiz.word);
-    const readingElement = document.getElementById('quiz-reading');
-    const shouldHideReading = hasKanji || (currentQuiz.word === currentQuiz.reading);
-    
-    if (currentQuiz.reading && currentQuiz.reading.trim() !== "" && !shouldHideReading) {
-        readingElement.innerText = currentQuiz.reading;
-        readingElement.style.display = 'block';
-    } else {
-        readingElement.style.display = 'none';
-    }
 
-    const buttons = document.querySelectorAll('.option-btn');
-    for (let i = 0; i < 4; i++) {
-        // 使用 replace 將所有 『 』 符號移除
-        let cleanOption = currentQuiz.options[i].replace(/[『』]/g, '');
-        buttons[i].innerText = cleanOption;
-        buttons[i].className = 'option-btn';
-    }
+    // 生成選項按鈕
+    const container = document.getElementById('options-container');
+    container.innerHTML = ''; 
+    currentQuiz.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(i);
+        container.appendChild(btn);
+    });
 
     document.getElementById('explanation-card').style.display = 'none';
     document.getElementById('nav-container').style.display = 'none';
 }
-function resetQuiz() {
-    // 1. 強制重置所有全域變數
-    currentIndex = 0;
-    correctCount = 0;
-    hasAnswered = false;
+
+function checkAnswer(selectedIndex) {
+    if (userAnswers[currentIndex] !== undefined) return; // 防止重複作答
+
+    const currentQuiz = quizData[currentIndex];
+    const isCorrect = (selectedIndex === currentQuiz.answer_index);
+    if (isCorrect) correctCount++;
+    userAnswers[currentIndex] = selectedIndex;
+
+    // 視覺回饋
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === currentQuiz.answer_index) btn.classList.add('correct');
+        else if (i === selectedIndex) btn.classList.add('wrong');
+    });
+
+    // 顯示解析
+    document.getElementById('explanation-card').style.display = 'block';
+    document.getElementById('result-status').innerText = isCorrect ? "✅ 正確！" : "❌ 錯誤";
+    document.getElementById('explanation-text').innerText = "解析：" + currentQuiz.explanation;
+    document.getElementById('nav-container').style.display = 'flex';
+}
+
+function nextQuiz() {
+    if (currentIndex < quizData.length - 1) {
+        currentIndex++;
+        showQuiz(currentIndex);
+    } else {
+        showResults();
+    }
+}
+
+function prevQuiz() {
+    if (currentIndex > 0) {
+        currentIndex--;
+        showQuiz(currentIndex);
+    }
+}
+
+function showResults() {
+    document.getElementById('quiz-area').style.display = 'none';
+    const resCard = document.getElementById('result-card');
+    resCard.style.display = 'block';
+
+    const score = Math.round((correctCount / quizData.length) * 100);
+    document.getElementById('score-text').innerText = `答對率：${score}% (${correctCount}/${quizData.length})`;
     
-    // 2. 切換介面顯示
-    document.getElementById('result-card').style.display = 'none';
-    document.getElementById('quiz-area').style.display = 'block';
-    document.getElementById('main-title').style.display = 'block';
-    
-    // 3. 重新呼叫 onload 邏輯來抓取新資料或重置題目
-    // 若要強制重新取得今日最新的 JSON，可再次呼叫 window.onload() 的邏輯
-    window.onload(); 
+    // 進度條計算：將 averageDifficulty (1-10) 映射為進度條寬度
+    const progress = averageDifficulty * 10; 
+    document.getElementById('progress-bar').style.width = `${progress}%`;
+    document.getElementById('summary-text').innerText = quizSummary;
 }
