@@ -1,25 +1,35 @@
+/**
+ * script.js - 核心引擎
+ */
 let quizData = [];
 let currentIndex = 0;
 let correctCount = 0;
-let userAnswers = {}; // 記錄使用者的答題狀態
+let userAnswers = {}; 
 let quizSummary = "";
 let averageDifficulty = 5;
 
 window.onload = function() {
+    // 透過 timestamp 防止瀏覽器快取舊的考題
     fetch('today.json?t=' + new Date().getTime())
-        .then(response => response.json())
-        .then(data => {
+        .then(response => response.text()) // 先讀取為純文字以進行清理
+        .then(text => {
+            // 清理潛在的 markdown 標籤，確保 JSON 解析不出錯
+            const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            const data = JSON.parse(cleanJson);
+            
             quizData = data.quiz;
             quizSummary = data.summary;
             averageDifficulty = data.average_difficulty;
+            
             currentIndex = 0;
             correctCount = 0;
             userAnswers = {};
+            
             showQuiz(currentIndex);
         })
         .catch(error => {
-            console.error('讀取失敗:', error);
-            document.getElementById('quiz-word').innerText = "考題載入失敗，請檢查 JSON 格式";
+            console.error('JSON 讀取或解析失敗:', error);
+            document.getElementById('quiz-word').innerText = "考題載入失敗，請檢查 JSON 檔案格式。";
         });
 };
 
@@ -27,14 +37,14 @@ function showQuiz(index) {
     const currentQuiz = quizData[index];
     const quizWord = document.getElementById('quiz-word');
     
-    // 設定題目文字與對齊方式 (根據 JSON 中的 alignment)
+    // 設定對齊方式 (根據 JSON 內的 alignment 欄位)
+    quizWord.style.textAlign = currentQuiz.alignment || 'center';
     quizWord.innerText = currentQuiz.word;
-    quizWord.style.textAlign = currentQuiz.alignment || 'center'; 
 
-    // 設定題目計數器
+    // 設定計數器
     document.getElementById('quiz-counter').innerText = `[${currentQuiz.type}] ${index + 1} / ${quizData.length}`;
 
-    // 生成選項按鈕
+    // 生成選項
     const container = document.getElementById('options-container');
     container.innerHTML = ''; 
     currentQuiz.options.forEach((opt, i) => {
@@ -45,12 +55,13 @@ function showQuiz(index) {
         container.appendChild(btn);
     });
 
+    // 隱藏解析與導航
     document.getElementById('explanation-card').style.display = 'none';
     document.getElementById('nav-container').style.display = 'none';
 }
 
 function checkAnswer(selectedIndex) {
-    if (userAnswers[currentIndex] !== undefined) return; // 防止重複作答
+    if (userAnswers[currentIndex] !== undefined) return; 
 
     const currentQuiz = quizData[currentIndex];
     const isCorrect = (selectedIndex === currentQuiz.answer_index);
@@ -67,8 +78,10 @@ function checkAnswer(selectedIndex) {
 
     // 顯示解析
     document.getElementById('explanation-card').style.display = 'block';
-    document.getElementById('result-status').innerText = isCorrect ? "✅ 正確！" : "❌ 錯誤";
+    document.getElementById('result-status').innerText = isCorrect ? "✅ 正確" : "❌ 錯誤";
     document.getElementById('explanation-text').innerText = "解析：" + currentQuiz.explanation;
+    
+    // 顯示導航
     document.getElementById('nav-container').style.display = 'flex';
 }
 
@@ -94,9 +107,9 @@ function showResults() {
     resCard.style.display = 'block';
 
     const score = Math.round((correctCount / quizData.length) * 100);
-    document.getElementById('score-text').innerText = `答對率：${score}% (${correctCount}/${quizData.length})`;
+    document.getElementById('score-text').innerText = `今日答對率：${score}% (${correctCount}/${quizData.length})`;
     
-    // 進度條計算：將 averageDifficulty (1-10) 映射為進度條寬度
+    // 進度條計算
     const progress = averageDifficulty * 10; 
     document.getElementById('progress-bar').style.width = `${progress}%`;
     document.getElementById('summary-text').innerText = quizSummary;
