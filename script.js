@@ -52,6 +52,18 @@ function showQuiz(index) {
     document.getElementById('explanation-card').style.display = 'none';
     document.getElementById('nav-container').style.display = 'none';
 }
-
-// checkAnswer, nextQuiz, prevQuiz, showResult 函數保持不變...
-// (請使用您之前測試成功的版本)
+function resetQuiz() {
+    // 1. 強制重置所有全域變數
+    currentIndex = 0;
+    correctCount = 0;
+    hasAnswered = false;
+    
+    // 2. 切換介面顯示
+    document.getElementById('result-card').style.display = 'none';
+    document.getElementById('quiz-area').style.display = 'block';
+    document.getElementById('main-title').style.display = 'block';
+    
+    // 3. 重新呼叫 onload 邏輯來抓取新資料或重置題目
+    // 若要強制重新取得今日最新的 JSON，可再次呼叫 window.onload() 的邏輯
+    window.onload(); 
+}
