@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <link rel="apple-touch-icon" href="BG.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="BG.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>今日小考題</title>
@@ -12,139 +10,22 @@
     <meta http-equiv="Expires" content="0">
 
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #F7F4E9;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        h1 {
-            color: #6C5434;
-            font-size: 24px;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        .quiz-card {
-            background-color: #FFF2CD;
-            border-radius: 24px;
-            padding: 30px 20px;
-            box-shadow: 0 4px 12px rgba(220, 210, 180, 0.5);
-            margin-bottom: 25px;
-            position: relative;
-        }
-
-        .quiz-counter {
-            color: #6C5434;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 25px;
-        }
-
-        /* 調整題目文字大小，使其更適合中文與長短句 */
-        .quiz-word {
-            color: #4A371E;
-            font-size: 24px;
-            font-weight: bold;
-            word-wrap: break-word;
-            line-height: 1.6;
-            margin: 15px 0;
-            text-align: left; /* 左對齊，方便閱讀克漏字短文 */
-        }
-
-        .quiz-reading {
-            color: #8C7355;
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-
-        .options-container {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .option-btn {
-            background-color: #CDAE81;
-            color: #FFFFFF;
-            border: none;
-            border-radius: 30px;
-            padding: 16px 20px;
-            font-size: 17px;
-            font-weight: 500;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(180, 150, 110, 0.3);
-            transition: all 0.2s ease;
-            width: 100%;
-            box-sizing: border-box;
-            text-align: center;
-        }
-
-        .option-btn:active {
-            transform: scale(0.98);
-            background-color: #BCA073;
-        }
-
-        .option-btn.correct {
-            background-color: #6B8E23 !important;
-        }
-
-        .option-btn.wrong {
-            background-color: #CD5C5C !important;
-        }
-
-        .explanation-card {
-            background-color: #FFFFFF;
-            border-radius: 16px;
-            padding: 20px;
-            margin-top: 20px;
-            text-align: left;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            display: none;
-        }
-
-        .explanation-title {
-            font-weight: bold;
-            color: #4A371E;
-            margin-bottom: 8px;
-        }
-
-        .explanation-text {
-            color: #6C5434;
-            line-height: 1.5;
-            font-size: 15px;
-        }
-
-        /* 下一題按鈕樣式 */
-        .next-container {
-            margin-top: 20px;
-            display: none;
-        }
-
-        .next-submit-btn {
-            background-color: #6C5434;
-            color: #FFFFFF;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 0;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #F7F4E9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+        .container { width: 100%; max-width: 400px; text-align: center; }
+        h1 { color: #6C5434; font-size: 24px; margin-bottom: 20px; font-weight: bold; }
+        .quiz-card { background-color: #FFF2CD; border-radius: 24px; padding: 30px 20px; box-shadow: 0 4px 12px rgba(220, 210, 180, 0.5); margin-bottom: 25px; }
+        .quiz-counter { color: #6C5434; font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+        .quiz-word { color: #4A371E; font-size: 24px; font-weight: bold; line-height: 1.6; margin: 15px 0; text-align: left; }
+        .quiz-reading { color: #8C7355; font-size: 18px; margin-bottom: 15px; }
+        .options-container { display: flex; flex-direction: column; gap: 14px; }
+        .option-btn { background-color: #CDAE81; color: #FFFFFF; border: none; border-radius: 30px; padding: 16px 20px; font-size: 17px; cursor: pointer; box-shadow: 0 4px 6px rgba(180, 150, 110, 0.3); transition: all 0.2s ease; width: 100%; text-align: center; }
+        .option-btn.correct { background-color: #6B8E23 !important; }
+        .option-btn.wrong { background-color: #CD5C5C !important; }
+        .next-container { margin-top: 20px; display: none; }
+        .next-submit-btn { background-color: #6C5434; color: #FFFFFF; border: none; border-radius: 12px; padding: 14px 0; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
+        .explanation-card { background-color: #FFFFFF; border-radius: 16px; padding: 20px; margin-top: 20px; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none; }
+        .explanation-title { font-weight: bold; color: #4A371E; margin-top: 15px; margin-bottom: 5px; }
+        .explanation-text { color: #6C5434; line-height: 1.5; font-size: 15px; }
     </style>
 </head>
 <body>
@@ -172,6 +53,12 @@
         <div class="explanation-card" id="explanation-card">
             <div class="explanation-title" id="result-status"></div>
             <div class="explanation-text" id="explanation-text"></div>
+            
+            <div class="explanation-title" id="translation-title" style="display: none;">文章翻譯：</div>
+            <div class="explanation-text" id="translation-text"></div>
+            
+            <div class="explanation-title" id="grammar-title" style="display: none;">文法重點解析：</div>
+            <div class="explanation-text" id="grammar-text"></div>
         </div>
     </div>
 
