@@ -1,46 +1,69 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // 讀取 GitHub 同目錄下的 today.json
-    fetch('today.json')
+let correctAnswerIndex = 0;
+let hasAnswered = false;
+
+// 網頁開啟時，自動去抓取同目錄下的 today.json
+window.onload = function() {
+    fetch('today.json?t=' + new Date().getTime()) // 加上時間參數防止瀏覽器快取舊題目
         .then(response => response.json())
         .then(data => {
-            // 渲染單字卡
-            document.getElementById('word').textContent = data.word;
-            document.getElementById('reading').textContent = data.reading ? `[ ${data.reading} ]` : '';
-            document.getElementById('meaning').textContent = data.meaning;
-            document.getElementById('example').textContent = `例句：${data.example}`;
+            // 1. 填入題目與讀音
+            document.getElementById('quiz-word').innerText = data.word;
             
-            // 渲染題目
-            document.getElementById('question').textContent = data.question;
+            if (data.reading && data.reading.trim() !== "") {
+                document.getElementById('quiz-reading').innerText = data.reading;
+                document.getElementById('quiz-reading').style.display = 'block';
+            } else {
+                document.getElementById('quiz-reading').style.display = 'none';
+            }
+
+            // 2. 填入選項文字
+            const buttons = document.querySelectorAll('.option-btn');
+            for (let i = 0; i < 4; i++) {
+                if (data.options && data.options[i]) {
+                    buttons[i].innerText = data.options[i];
+                    buttons[i].style.display = 'block';
+                } else {
+                    buttons[i].style.display = 'none';
+                }
+            }
+
+            // 3. 紀錄正確答案索引 (由 Python 傳過來的 0, 1, 2, 3)
+            correctAnswerIndex = data.answer_index;
+
+            // 4. 更新題數（你可以根據後台傳遞的變數修改，目前預設單題模式顯示 1/1）
+            // 如果你在後台有設計多題，可以直接改用 data.counter_text 類似的欄位
+            document.getElementById('quiz-counter').innerText = "1 / 1";
             
-            const container = document.getElementById('options-container');
-            data.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.className = "w-full text-left px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition font-medium text-slate-700";
-                button.textContent = option;
-                
-                // 點擊選項時的邏輯
-                button.addEventListener('click', () => {
-                    // 凍結所有按鈕
-                    const allButtons = container.querySelectorAll('button');
-                    allButtons.forEach(btn => btn.disabled = true);
-                    
-                    if (index === data.answer_index) {
-                        button.className = "w-full text-left px-4 py-3 bg-emerald-500 text-white font-bold rounded-xl shadow-sm";
-                    } else {
-                        button.className = "w-full text-left px-4 py-3 bg-rose-500 text-white font-bold rounded-xl shadow-sm";
-                        allButtons[data.answer_index].className = "w-full text-left px-4 py-3 bg-emerald-100 text-emerald-800 font-bold rounded-xl";
-                    }
-                    
-                    // 顯示解析
-                    document.getElementById('explanation').textContent = data.explanation;
-                    document.getElementById('explanation-box').classList.remove('hidden');
-                });
-                
-                container.appendChild(button);
-            });
+            // 儲存解析文字供後面使用
+            document.getElementById('explanation-text').innerText = data.explanation || "本題暫無解析。";
         })
-        .catch(err => {
-            document.getElementById('word').textContent = "未找到今日資料，請稍後再試！";
-            console.error("讀取資料失敗:", err);
+        .catch(error => {
+            console.error('讀取今日考題失敗:', error);
+            document.getElementById('quiz-word').innerText = "點擊畫面重新整理";
         });
-});
+};
+
+// 檢查答案的邏輯
+function checkAnswer(selectedIndex) {
+    if (hasAnswered) return; // 答過就鎖定，防止重複點擊
+    hasAnswered = true;
+
+    const buttons = document.querySelectorAll('.option-btn');
+    const resultStatus = document.getElementById('result-status');
+    const explanationCard = document.getElementById('explanation-card');
+
+    // 標示正確與錯誤按鈕的顏色
+    if (selectedIndex === correctAnswerIndex) {
+        buttons[selectedIndex].classList.add('correct');
+        resultStatus.innerText = "🎉 答對了！";
+        resultStatus.style.color = "#6B8E23";
+    } else {
+        buttons[selectedIndex].classList.add('wrong');
+        buttons[correctAnswerIndex].classList.add('correct'); // 自動翻開正確答案
+        resultStatus.innerText = "❌ 答錯囉！別灰心";
+        resultStatus.style.color = "#CD5C5C";
+    }
+
+    // 顯示解析卡片
+    explanationCard.style.display = 'block';
+}
