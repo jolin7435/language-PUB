@@ -6,10 +6,11 @@ let hasAnswered = false;
 let quizSummary = "";
 
 window.onload = function() {
+    // 強制避開快取讀取最新的 JSON
     fetch('today.json?t=' + new Date().getTime())
         .then(response => response.json())
         .then(data => {
-            // 關鍵修改：從物件中抓取 quiz 陣列與其他欄位
+            // 這裡對應你目前 JSON 的結構：外層是物件，內容包含 quiz 陣列
             quizData = data.quiz; 
             quizSummary = data.summary;
             averageDifficulty = data.average_difficulty;
@@ -17,8 +18,8 @@ window.onload = function() {
             showQuiz(currentIndex);
         })
         .catch(error => {
-            console.error('讀取失敗:', error);
-            document.getElementById('quiz-word').innerText = "考題載入失敗";
+            console.error('資料載入錯誤:', error);
+            document.getElementById('quiz-word').innerText = "題目載入失敗，請稍後再試";
         });
 };
 
@@ -27,20 +28,23 @@ function showQuiz(index) {
     hasAnswered = false;
     const currentQuiz = quizData[index];
 
-    // 更新介面
+    // 更新計數器與題目
     document.getElementById('quiz-counter').innerText = `[${currentQuiz.type}] ${index + 1} / ${quizData.length}`;
     document.getElementById('quiz-word').innerHTML = currentQuiz.word.replace(/\n/g, '<br>');
     
+    // 處理讀音顯示
     const readingElement = document.getElementById('quiz-reading');
     readingElement.innerText = currentQuiz.reading || "";
     readingElement.style.display = (currentQuiz.reading && currentQuiz.reading.trim()) ? 'block' : 'none';
 
+    // 重置選項按鈕狀態
     const buttons = document.querySelectorAll('.option-btn');
     for (let i = 0; i < 4; i++) {
         buttons[i].innerText = currentQuiz.options[i];
         buttons[i].className = 'option-btn';
     }
 
+    // 隱藏結果區塊
     document.getElementById('explanation-card').style.display = 'none';
     document.getElementById('nav-container').style.display = 'none';
 }
@@ -90,16 +94,18 @@ function prevQuiz() {
 }
 
 function showResult() {
+    // 隱藏所有測驗介面
     document.getElementById('quiz-area').style.display = 'none';
     document.getElementById('main-title').style.display = 'none';
     
+    // 顯示結果卡片
     const resultCard = document.getElementById('result-card');
     resultCard.style.display = 'block';
     
     document.getElementById('score-text').innerText = `今日得分：${correctCount} / 10`;
     
-    // 計算進度條寬度 (假設難度為平均 5.5)
-    const progress = (correctCount / 10) * (averageDifficulty / 10) * 100 + 40; 
+    // 進度條計算：基礎寬度 40% + (答對率 * 難度加權)
+    const progress = 40 + (correctCount * (averageDifficulty / 10) * 6);
     document.getElementById('progress-bar').style.width = Math.min(progress, 100) + "%";
     document.getElementById('summary-text').innerText = quizSummary;
 }
