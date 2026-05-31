@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>今日小考題</title>
-    
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -21,8 +20,11 @@
         .option-btn { background-color: #CDAE81; color: #FFFFFF; border: none; border-radius: 30px; padding: 16px 20px; font-size: 17px; cursor: pointer; box-shadow: 0 4px 6px rgba(180, 150, 110, 0.3); transition: all 0.2s ease; width: 100%; text-align: center; }
         .option-btn.correct { background-color: #6B8E23 !important; }
         .option-btn.wrong { background-color: #CD5C5C !important; }
-        .next-container { margin-top: 20px; display: none; }
-        .next-submit-btn { background-color: #6C5434; color: #FFFFFF; border: none; border-radius: 12px; padding: 14px 0; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
+        
+        .nav-container { margin-top: 20px; display: flex; gap: 10px; display: none; }
+        .nav-btn { background-color: #6C5434; color: #FFFFFF; border: none; border-radius: 12px; padding: 14px 0; font-size: 16px; font-weight: bold; cursor: pointer; flex: 1; }
+        .prev-btn { background-color: #A69075; }
+
         .explanation-card { background-color: #FFFFFF; border-radius: 16px; padding: 20px; margin-top: 20px; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none; }
         .explanation-title { font-weight: bold; color: #4A371E; margin-top: 15px; margin-bottom: 5px; }
         .explanation-text { color: #6C5434; line-height: 1.5; font-size: 15px; }
@@ -32,7 +34,6 @@
 
     <div class="container">
         <h1>今日小考題</h1>
-
         <div class="quiz-card">
             <div class="quiz-counter" id="quiz-counter">載入中...</div>
             <div class="quiz-word" id="quiz-word">隨機題目生成中...</div>
@@ -46,22 +47,20 @@
             <button class="option-btn" onclick="checkAnswer(3)">選項 4</button>
         </div>
 
-        <div class="next-container" id="next-btn-container">
-            <button class="next-submit-btn" id="next-btn" onclick="nextQuiz()">下一題 ➡️</button>
+        <div class="nav-container" id="nav-container">
+            <button class="nav-btn prev-btn" onclick="prevQuiz()">⬅️ 上一題</button>
+            <button class="nav-btn" id="next-btn" onclick="nextQuiz()">下一題 ➡️</button>
         </div>
 
         <div class="explanation-card" id="explanation-card">
             <div class="explanation-title" id="result-status"></div>
             <div class="explanation-text" id="explanation-text"></div>
-            
             <div class="explanation-title" id="translation-title" style="display: none;">文章翻譯：</div>
             <div class="explanation-text" id="translation-text"></div>
-            
             <div class="explanation-title" id="grammar-title" style="display: none;">文法重點解析：</div>
             <div class="explanation-text" id="grammar-text"></div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
