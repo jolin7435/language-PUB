@@ -12,10 +12,14 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #F7F4E9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
         .container { width: 100%; max-width: 400px; text-align: center; }
         h1 { color: #6C5434; font-size: 24px; margin-bottom: 20px; font-weight: bold; }
+        
+        /* 測驗區塊 */
         .quiz-card { background-color: #FFF2CD; border-radius: 24px; padding: 30px 20px; box-shadow: 0 4px 12px rgba(220, 210, 180, 0.5); margin-bottom: 25px; }
         .quiz-counter { color: #6C5434; font-size: 16px; font-weight: 600; margin-bottom: 20px; }
         .quiz-word { color: #4A371E; font-size: 24px; font-weight: bold; line-height: 1.6; margin: 15px 0; text-align: left; }
         .quiz-reading { color: #8C7355; font-size: 18px; margin-bottom: 15px; }
+        
+        /* 按鈕區塊 */
         .options-container { display: flex; flex-direction: column; gap: 14px; }
         .option-btn { background-color: #CDAE81; color: #FFFFFF; border: none; border-radius: 30px; padding: 16px 20px; font-size: 17px; cursor: pointer; box-shadow: 0 4px 6px rgba(180, 150, 110, 0.3); transition: all 0.2s ease; width: 100%; text-align: center; }
         .option-btn.correct { background-color: #6B8E23 !important; }
@@ -25,42 +29,62 @@
         .nav-btn { background-color: #6C5434; color: #FFFFFF; border: none; border-radius: 12px; padding: 14px 0; font-size: 16px; font-weight: bold; cursor: pointer; flex: 1; }
         .prev-btn { background-color: #A69075; }
 
+        /* 解析區塊 */
         .explanation-card { background-color: #FFFFFF; border-radius: 16px; padding: 20px; margin-top: 20px; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none; }
         .explanation-title { font-weight: bold; color: #4A371E; margin-top: 15px; margin-bottom: 5px; }
         .explanation-text { color: #6C5434; line-height: 1.5; font-size: 15px; }
+
+        /* 結果頁區塊 */
+        .result-card { background-color: #FFFDF5; border-radius: 24px; padding: 40px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: none; }
+        .progress-bg { background: #e0dcd0; height: 24px; border-radius: 12px; margin: 25px 0; overflow: hidden; }
+        #progress-bar { background: #6B8E23; height: 100%; width: 0%; border-radius: 12px; transition: width 1.5s ease-out; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>今日小考題</h1>
-        <div class="quiz-card">
-            <div class="quiz-counter" id="quiz-counter">載入中...</div>
-            <div class="quiz-word" id="quiz-word">隨機題目生成中...</div>
-            <div class="quiz-reading" id="quiz-reading"></div>
+        <h1 id="main-title">今日小考題</h1>
+
+        <div id="quiz-area">
+            <div class="quiz-card">
+                <div class="quiz-counter" id="quiz-counter">載入中...</div>
+                <div class="quiz-word" id="quiz-word">隨機題目生成中...</div>
+                <div class="quiz-reading" id="quiz-reading"></div>
+            </div>
+
+            <div class="options-container" id="options-container">
+                <button class="option-btn" onclick="checkAnswer(0)">選項 1</button>
+                <button class="option-btn" onclick="checkAnswer(1)">選項 2</button>
+                <button class="option-btn" onclick="checkAnswer(2)">選項 3</button>
+                <button class="option-btn" onclick="checkAnswer(3)">選項 4</button>
+            </div>
+
+            <div class="nav-container" id="nav-container">
+                <button class="nav-btn prev-btn" onclick="prevQuiz()">⬅️ 上一題</button>
+                <button class="nav-btn" id="next-btn" onclick="nextQuiz()">下一題 ➡️</button>
+            </div>
+
+            <div class="explanation-card" id="explanation-card">
+                <div class="explanation-title" id="result-status"></div>
+                <div class="explanation-text" id="explanation-text"></div>
+                <div class="explanation-title" id="translation-title" style="display: none;">文章翻譯：</div>
+                <div class="explanation-text" id="translation-text"></div>
+                <div class="explanation-title" id="grammar-title" style="display: none;">文法重點解析：</div>
+                <div class="explanation-text" id="grammar-text"></div>
+            </div>
         </div>
 
-        <div class="options-container" id="options-container">
-            <button class="option-btn" onclick="checkAnswer(0)">選項 1</button>
-            <button class="option-btn" onclick="checkAnswer(1)">選項 2</button>
-            <button class="option-btn" onclick="checkAnswer(2)">選項 3</button>
-            <button class="option-btn" onclick="checkAnswer(3)">選項 4</button>
-        </div>
-
-        <div class="nav-container" id="nav-container">
-            <button class="nav-btn prev-btn" onclick="prevQuiz()">⬅️ 上一題</button>
-            <button class="nav-btn" id="next-btn" onclick="nextQuiz()">下一題 ➡️</button>
-        </div>
-
-        <div class="explanation-card" id="explanation-card">
-            <div class="explanation-title" id="result-status"></div>
-            <div class="explanation-text" id="explanation-text"></div>
-            <div class="explanation-title" id="translation-title" style="display: none;">文章翻譯：</div>
-            <div class="explanation-text" id="translation-text"></div>
-            <div class="explanation-title" id="grammar-title" style="display: none;">文法重點解析：</div>
-            <div class="explanation-text" id="grammar-text"></div>
+        <div class="result-card" id="result-card">
+            <h2>測驗總結</h2>
+            <p id="score-text" style="font-size: 22px; font-weight: bold; color: #6C5434;"></p>
+            <div class="progress-bg">
+                <div id="progress-bar"></div>
+            </div>
+            <p id="summary-text" style="color: #4A371E; line-height: 1.6;"></p>
+            <button class="nav-btn" onclick="location.reload()" style="margin-top: 20px;">重新開始測驗</button>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
