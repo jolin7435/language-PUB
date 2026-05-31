@@ -45,7 +45,9 @@ function showQuiz(index) {
 
     const buttons = document.querySelectorAll('.option-btn');
     for (let i = 0; i < 4; i++) {
-        buttons[i].innerText = currentQuiz.options[i];
+        // 使用 replace 將所有 『 』 符號移除
+        let cleanOption = currentQuiz.options[i].replace(/[『』]/g, '');
+        buttons[i].innerText = cleanOption;
         buttons[i].className = 'option-btn';
     }
 
