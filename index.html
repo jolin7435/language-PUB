@@ -7,37 +7,41 @@
     <title>今日小考題</title>
     <style>
         :root {
-            --primary: #5f6f52; /* 橄欖綠 */
-            --secondary: #b99470; /* 土色 */
-            --bg: #f9f7f2; /* 米色底 */
+            --primary-navy: #1a2b4b;
+            --btn-brown: #5d4037; /* 下一題：深咖啡色 */
+            --btn-gray: #8b7d72;  /* 上一題/重新開始：淺咖啡色 */
+            --bg-cream: #f9f7f2;
         }
-        body { font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg-cream); display: flex; justify-content: center; padding: 20px; }
         .container { max-width: 500px; width: 100%; background: #fffdf9; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        h1 { text-align: center; color: var(--primary-navy); margin-bottom: 20px; }
         
+        .q-meta { color: #777; font-size: 14px; margin-bottom: 10px; }
         .option-btn {
             display: block; width: 100%; padding: 15px; margin: 10px 0;
-            background-color: var(--secondary); color: white; border: none;
-            border-radius: 10px; cursor: pointer; font-size: 18px; transition: 0.3s;
+            background-color: #d2b48c; color: white; border: none; border-radius: 10px; 
+            cursor: pointer; font-size: 18px; transition: 0.3s;
         }
-        .option-btn:hover { opacity: 0.9; }
         
+        /* 按鈕區塊與導覽 */
         .nav-container { display: flex; gap: 10px; margin-top: 20px; }
-        .nav-btn { flex: 1; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; color: white; background: #666; }
+        .nav-btn { flex: 1; padding: 15px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; }
+        .btn-prev { background: var(--btn-gray); }
+        .btn-next { background: var(--btn-brown); }
         
-        /* 確保動態內容顯示正確 */
-        #quiz-content { min-height: 300px; }
+        /* 進度條與其他 */
+        .progress-bg { background: #eee; width: 100%; height: 25px; border-radius: 15px; margin: 20px 0; overflow: hidden; }
+        .progress-fill { background: #5f6f52; height: 100%; transition: width 1s ease; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>今日小考題</h1>
-    <div id="quiz-content">
-        </div>
+    <div id="quiz-content"></div>
     <div id="nav-btns" class="nav-container">
-        <button class="nav-btn" onclick="prevQuestion()" style="background: #8b7d72;">⬅ 上一題</button>
-        <button class="nav-btn" onclick="nextQuestion()" style="background: #5f6f52;">下一題 ➡</button>
+        <button class="nav-btn btn-prev" onclick="prevQuestion()">⬅ 上一題</button>
+        <button class="nav-btn btn-next" onclick="nextQuestion()">下一題 ➡</button>
     </div>
 </div>
 
