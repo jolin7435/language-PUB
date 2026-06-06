@@ -6,12 +6,12 @@ let userAnswers = [];
 async function loadQuestions() {
     try {
         // 使用時間戳記參數強制向伺服器請求最新檔案，繞過瀏覽器快取
-        const response = await fetch('questions.json?t=' + new Date().getTime());
+        const response = await fetch('today.json?t=' + new Date().getTime());
         quizData = await response.json();
         userAnswers = new Array(quizData.length).fill(null);
         renderQuiz();
     } catch (e) {
-        document.getElementById('quiz-content').innerHTML = "題目載入失敗，請檢查 questions.json 是否存在。";
+        document.getElementById('quiz-content').innerHTML = "題目載入失敗，請檢查 today.json 是否存在。";
     }
 }
 
