@@ -5,14 +5,17 @@ let userAnswers = [];
 async function loadQuestions() {
     try {
         const response = await fetch('today.json?t=' + new Date().getTime());
-        const text = await response.text(); // 先抓文字
-        console.log("Raw JSON text:", text); // 如果格式有錯，這裡會印出來，方便除錯
-        quizData = JSON.parse(text); // 手動解析
+        let text = await response.text();
+        
+        // 核心修正：自動移除 Markdown 的標記
+        text = text.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
+        
+        quizData = JSON.parse(text); 
         userAnswers = new Array(quizData.length).fill(null);
         renderQuiz();
     } catch (e) {
-        console.error("解析失敗:", e);
-        document.getElementById('quiz-content').innerHTML = "資料解析失敗，請確認檔案格式是否正確。";
+        console.error("解析失敗，請確認檔案格式是否為乾淨的 JSON:", e);
+        document.getElementById('quiz-content').innerHTML = "資料讀取失敗，請確認 today.json 是否為純 JSON 格式。";
     }
 }
 
