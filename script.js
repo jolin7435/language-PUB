@@ -5,17 +5,20 @@ let userAnswers = [];
 async function loadQuestions() {
     try {
         const response = await fetch('today.json?t=' + new Date().getTime());
-        let text = await response.text();
+        if (!response.ok) throw new Error("讀取檔案失敗");
         
-        // 核心修正：自動移除 Markdown 的標記
+        let text = await response.text();
+        // 清洗可能的 Markdown 格式
         text = text.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
         
-        quizData = JSON.parse(text); 
+        quizData = JSON.parse(text);
+        console.log("成功載入題目資料:", quizData); // <--- 加入這行
+        
         userAnswers = new Array(quizData.length).fill(null);
         renderQuiz();
     } catch (e) {
-        console.error("解析失敗，請確認檔案格式是否為乾淨的 JSON:", e);
-        document.getElementById('quiz-content').innerHTML = "資料讀取失敗，請確認 today.json 是否為純 JSON 格式。";
+        console.error("錯誤:", e);
+        document.getElementById('quiz-content').innerHTML = "題目載入失敗，錯誤原因：" + e.message;
     }
 }
 
