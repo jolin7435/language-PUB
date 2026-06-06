@@ -1,127 +1,36 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>今日小考題</title>
-    <link rel="icon" type="image/png" href="BG.png">
-    <link rel="apple-touch-icon" href="BG.png">
-    
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="今日小考題">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { 
-            font-family: 'Helvetica Neue', Arial, sans-serif; 
-            padding: 20px; 
-            background-color: #fdfaf5; 
-            color: #4a4a4a;
-            max-width: 500px;
-            margin: auto;
-        }
-        h2 { text-align: center; color: #5d4d3c; margin-bottom: 20px; }
-        
-        /* 標題卡片區 */
-        #quiz-counter {
-            background: #fdf5e6;
-            border: 1px solid #eaddca;
-            padding: 25px;
-            border-radius: 20px;
-            text-align: center;
-            font-size: 1.2rem;
-            color: #5d4d3c;
-            margin-bottom: 20px;
-        }
-
-        /* 題目卡片 */
-        #quiz-word { 
-            background: #fdf5e6;
-            padding: 30px; 
-            border-radius: 25px; 
-            border: 1px solid #eaddca;
-            margin-bottom: 20px;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #5d4d3c;
-        }
-
-        /* 選項按鈕 */
-        .option-btn { 
-            display: block; 
-            width: 100%; 
-            padding: 20px; 
-            margin-bottom: 15px; 
-            border: none; 
-            border-radius: 20px;
-            background: #c6a782; 
-            color: white; 
-            font-size: 1.1rem;
-            cursor: pointer; 
-            transition: 0.2s;
-        }
-        .correct { background-color: #6B8E23 !important; }
-        .wrong { background-color: #CD5C5C !important; }
-
-        /* 導航按鈕 */
-        .nav-container { display: flex; gap: 10px; margin-bottom: 20px; }
-        .nav-btn { 
-            flex: 1; 
-            padding: 15px; 
-            border-radius: 15px; 
-            border: none; 
-            background: #7d6955; 
-            color: white; 
-            font-size: 1rem;
-            cursor: pointer; 
-        }
-
-        /* 解析區塊 */
-        #explanation-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid #eee;
-            margin-bottom: 20px;
-        }
-
-        /* 結果頁面與進度條 */
-        .progress-wrapper { display: flex; align-items: center; gap: 10px; margin: 20px 0; }
-        .progress-bar-bg { flex-grow: 1; background: #eaddca; height: 12px; border-radius: 6px; overflow: hidden; }
-        .progress-bar-fill { background: #7d6955; height: 100%; width: 0%; transition: width 0.5s; }
+        /* 基礎佈局樣式，確保視覺統一 */
+        body { font-family: 'Noto Sans JP', sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #1a2b4b; text-align: center; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <h2>今日小考題</h2>
-    
-    <div id="quiz-area">
-        <div id="quiz-counter">載入中...</div>
-        <div id="quiz-word"></div>
-        
-        <div id="options-container"></div>
-
-        <div class="nav-container" id="nav-container" style="display:none;">
-            <button class="nav-btn" onclick="prevQuiz()">⬅️ 上一題</button>
-            <button class="nav-btn" onclick="nextQuiz()">下一題 ➡️</button>
-        </div>
-
-        <div id="explanation-card" style="display:none;">
-            <div id="result-status" style="font-weight:bold; margin-bottom:10px;"></div>
-            <p id="explanation-text"></p>
+<div class="container">
+    <h1>今日小考題</h1>
+    <div id="quiz-app">
+        <div id="quiz-content"></div>
+        <div id="nav-btns" style="margin-top: 20px; text-align: center;">
+            <button onclick="prevQuestion()" id="prev-btn">上一題</button>
+            <button onclick="nextQuestion()" id="next-btn">下一題</button>
         </div>
     </div>
+</div>
 
-    <div id="result-card" style="display:none;" class="card">
-        <h3>測驗總結</h3>
-        <p id="score-text"></p>
-        <div class="progress-wrapper">
-            <span>Level</span>
-            <div class="progress-bar-bg"><div id="progress-bar" class="progress-bar-fill"></div></div>
-            <span>N4</span>
-        </div>
-        <p id="summary-text"></p>
+<script>
+    document.write('<script src="script.js?t=' + new Date().getTime() + '"><\/script>');
+</script>
+</body>
+</html>
