@@ -3,22 +3,22 @@ let currentIdx = 0;
 let userAnswers = [];
 
 async function loadQuestions() {
+    console.log("開始載入題目..."); // 看看這一行有沒有出現
     try {
         const response = await fetch('today.json?t=' + new Date().getTime());
-        if (!response.ok) throw new Error("讀取檔案失敗");
+        console.log("Fetch 請求完成，狀態碼:", response.status); 
         
-        let text = await response.text();
-        // 清洗可能的 Markdown 格式
-        text = text.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
+        const text = await response.text();
+        console.log("讀取到的原始資料:", text); // 看看這裡是不是空的，或者是不是錯誤的 HTML
         
-        quizData = JSON.parse(text);
-        console.log("成功載入題目資料:", quizData); // <--- 加入這行
+        quizData = JSON.parse(text); 
+        console.log("JSON 解析成功，題目數量:", quizData.length);
         
         userAnswers = new Array(quizData.length).fill(null);
         renderQuiz();
     } catch (e) {
-        console.error("錯誤:", e);
-        document.getElementById('quiz-content').innerHTML = "題目載入失敗，錯誤原因：" + e.message;
+        console.error("出錯了！錯誤原因:", e);
+        document.getElementById('quiz-content').innerHTML = "出錯了，請查看 Console 錯誤訊息";
     }
 }
 
