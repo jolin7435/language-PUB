@@ -5,12 +5,14 @@ let userAnswers = [];
 async function loadQuestions() {
     try {
         const response = await fetch('today.json?t=' + new Date().getTime());
-        quizData = await response.json();
-        // 確保題目數量正確 (若少於10題，這裡會依據實際題數顯示)
+        const text = await response.text(); // 先抓文字
+        console.log("Raw JSON text:", text); // 如果格式有錯，這裡會印出來，方便除錯
+        quizData = JSON.parse(text); // 手動解析
         userAnswers = new Array(quizData.length).fill(null);
         renderQuiz();
     } catch (e) {
-        document.getElementById('quiz-content').innerHTML = "題目載入失敗，請確認 today.json 內容。";
+        console.error("解析失敗:", e);
+        document.getElementById('quiz-content').innerHTML = "資料解析失敗，請確認檔案格式是否正確。";
     }
 }
 
