@@ -18,7 +18,11 @@ async function loadQuestions() {
 }
 
 function renderQuiz() {
-    if (isFinished) return showResults();
+    if (isFinished) {
+        showResults();
+        updateNextButtonText(); // 確保進入結果頁時文字更新
+        return;
+    }
 
     const q = quizData[currentIdx];
     const savedAnswer = userAnswers[currentIdx];
@@ -42,11 +46,26 @@ function renderQuiz() {
         <div id="explanation-area" style="margin-top:20px; padding:15px; background:#fff8e1; border-radius:8px; display:${savedAnswer !== null ? 'block' : 'none'};">
             <strong>${savedAnswer !== null ? (savedAnswer === q.answer_index ? "答對了！" : "答錯了QQ") : ""}</strong><br>
             <div style="margin-top: 8px;">${q.explanation || ''}</div>
-            ${q.explanation_zh ? `<br><div style="margin-top: 5px; padding-top: 10px; border-top: 1px dashed #ccc; color: #555;">${q.explanation_zh}</div>` : ''}
+            ${q.explanation_zh ? `<br><div style="margin-top: 5px; padding-top: 10px; border-top: 1px dashed #ccc; color: #555;">句意為：${q.explanation_zh}</div>` : ''}
         </div>
     `;
     document.getElementById('quiz-content').innerHTML = html;
     if (savedAnswer !== null) markButtons(savedAnswer, q);
+    
+    // 每次渲染題目時，確保按鈕文字改回「下一題」
+    updateNextButtonText();
+}
+
+// 輔助函式：負責統一管理「下一題/重新開始」的文字切換
+function updateNextButtonText() {
+    const nextBtn = document.querySelector('button[onclick="nextQuestion()"]');
+    if (!nextBtn) return;
+    
+    if (isFinished) {
+        nextBtn.textContent = "重新開始";
+    } else {
+        nextBtn.textContent = "下一題";
+    }
 }
 
 function markButtons(selectedIdx, q) {
@@ -92,12 +111,23 @@ function showResults() {
 }
 
 window.submitAnswer = (i) => { userAnswers[currentIdx] = i; renderQuiz(); };
-// 以下保持原本的導航邏輯，未做額外更動
-window.prevQuestion = () => { if(currentIdx > 0) { currentIdx--; isFinished = false; renderQuiz(); } };
+window.prevQuestion = () => { 
+    if(currentIdx > 0) { 
+        currentIdx--; 
+        isFinished = false; 
+        renderQuiz(); 
+    } 
+};
 window.nextQuestion = () => {
     if (isFinished) { location.reload(); return; }
-    if (currentIdx < quizData.length - 1) { currentIdx++; renderQuiz(); }
-    else { isFinished = true; renderQuiz(); }
+    if (currentIdx < quizData.length - 1) { 
+        currentIdx++; 
+        renderQuiz(); 
+    }
+    else { 
+        isFinished = true; 
+        renderQuiz(); 
+    }
 };
 
 loadQuestions();
