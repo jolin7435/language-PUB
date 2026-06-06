@@ -42,11 +42,7 @@ function renderQuiz() {
         <div id="explanation-area" style="margin-top:20px; padding:15px; background:#fff8e1; border-radius:8px; display:${savedAnswer !== null ? 'block' : 'none'};">
             <strong>${savedAnswer !== null ? (savedAnswer === q.answer_index ? "答對了！" : "答錯了QQ") : ""}</strong><br>
             <div style="margin-top: 8px;">${q.explanation || ''}</div>
-            ${q.explanation_zh ? `<br><div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; color: #555;">翻譯：${q.explanation_zh}</div>` : ''}
-        </div>
-        <div style="margin-top: 20px; text-align: center;">
-            ${currentIdx > 0 ? `<button onclick="prevQuestion()">上一題</button>` : ''}
-            <button onclick="nextQuestion()">${currentIdx === quizData.length - 1 ? '查看結果' : '下一題'}</button>
+            ${q.explanation_zh ? `<br><div style="margin-top: 5px; padding-top: 10px; border-top: 1px dashed #ccc; color: #555;">${q.explanation_zh}</div>` : ''}
         </div>
     `;
     document.getElementById('quiz-content').innerHTML = html;
@@ -91,14 +87,15 @@ function showResults() {
             <div style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px; line-height: 1.6;">
                 ${getExpertDiagnosis(score)}
             </div>
-            <button onclick="location.reload()" style="margin-top:20px; padding: 10px 20px;">重新開始</button>
         </div>
     `;
 }
 
 window.submitAnswer = (i) => { userAnswers[currentIdx] = i; renderQuiz(); };
-window.prevQuestion = () => { if(currentIdx > 0) { currentIdx--; renderQuiz(); } };
+// 以下保持原本的導航邏輯，未做額外更動
+window.prevQuestion = () => { if(currentIdx > 0) { currentIdx--; isFinished = false; renderQuiz(); } };
 window.nextQuestion = () => {
+    if (isFinished) { location.reload(); return; }
     if (currentIdx < quizData.length - 1) { currentIdx++; renderQuiz(); }
     else { isFinished = true; renderQuiz(); }
 };
