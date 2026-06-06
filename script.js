@@ -60,3 +60,21 @@ window.submitAnswer = function(i) {
 };
 
 loadQuestions();
+// 確保下一題和上一題的功能被定義並掛載到 window
+window.nextQuestion = function() {
+    if (currentIdx < quizData.length - 1) {
+        currentIdx++;
+        renderQuiz();
+    } else {
+        alert("這已經是最後一題了！");
+    }
+};
+
+window.prevQuestion = function() {
+    if (currentIdx > 0) {
+        currentIdx--;
+        renderQuiz();
+    } else {
+        alert("這是第一題。");
+    }
+};
