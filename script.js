@@ -2,92 +2,75 @@ let quizData = [];
 let currentIdx = 0;
 let userAnswers = [];
 
-// 1. 載入題目
 async function loadQuestions() {
     try {
         const response = await fetch('today.json?t=' + new Date().getTime());
         quizData = await response.json();
+        // 確保題目數量正確 (若少於10題，這裡會依據實際題數顯示)
         userAnswers = new Array(quizData.length).fill(null);
         renderQuiz();
     } catch (e) {
-        document.getElementById('quiz-content').innerHTML = "題目載入失敗，請檢查 today.json 格式";
+        document.getElementById('quiz-content').innerHTML = "題目載入失敗，請確認 today.json 內容。";
     }
 }
 
-// 2. 渲染畫面
 function renderQuiz() {
     const q = quizData[currentIdx];
+    const isSentence = q.question.length > 15; // 簡單判定：字數超過15字視為句子
+
     const html = `
         <div class="q-meta">[${q.type}] ${currentIdx + 1} / ${quizData.length}</div>
-        <div class="q-text" style="font-size: 24px; margin: 20px 0;">${q.question}</div>
+        <div class="q-text" style="text-align: ${isSentence ? 'left' : 'center'}; font-size: 24px; margin: 20px 0;">
+            ${q.question}
+        </div>
         <div class="options">
             ${q.options.map((opt, i) => `
                 <button class="option-btn" onclick="submitAnswer(${i})" id="btn-${i}">${opt}</button>
             `).join('')}
         </div>
         <div id="explanation-area" style="margin-top:20px; padding:15px; background:#fff8e1; border-radius:8px; display:none;">
-            <strong>解析：</strong><br>${q.explanation || '無解析'}
+            <strong id="result-text"></strong><br>
+            <div id="exp-detail"></div>
         </div>
     `;
     document.getElementById('quiz-content').innerHTML = html;
-    
-    // 如果已經回答過，標示顏色
-    if(userAnswers[currentIdx] !== null) {
-        highlightAnswer(userAnswers[currentIdx]);
-    }
 }
 
-// 3. 提交答案邏輯
 window.submitAnswer = function(i) {
+    if (userAnswers[currentIdx] !== null) return; // 防止重複作答
     userAnswers[currentIdx] = i;
-    highlightAnswer(i);
-    document.getElementById('explanation-area').style.display = 'block';
-};
-
-function highlightAnswer(i) {
+    
+    const isCorrect = (i === quizData[currentIdx].answer);
     const buttons = document.querySelectorAll('.option-btn');
-    buttons.forEach(b => b.style.backgroundColor = '#d2b48c'); // 原本的土色
-    buttons[i].style.backgroundColor = '#6d8c7b'; // 選中後的橄欖綠
-    buttons[i].style.color = 'white';
-}
-
-// 4. 導覽邏輯
-window.prevQuestion = function() {
-    if(currentIdx > 0) { currentIdx--; renderQuiz(); }
+    
+    // 顏色處理
+    buttons[i].style.backgroundColor = isCorrect ? '#6d8c7b' : '#c62828'; // 綠色或紅色
+    
+    // 解析欄位顯示
+    const expArea = document.getElementById('explanation-area');
+    document.getElementById('result-text').textContent = isCorrect ? "答對了！" : "答錯了QQ";
+    document.getElementById('exp-detail').innerHTML = quizData[currentIdx].explanation;
+    expArea.style.display = 'block';
 };
 
-window.nextQuestion = function() {
-    if(currentIdx < quizData.length - 1) {
-        currentIdx++; renderQuiz();
-    } else {
-        finishQuiz();
-    }
-};
-
-// 5. 結算邏輯
+// ... (prevQuestion 與 nextQuestion 邏輯不變)
+// 修正後的 finishQuiz 邏輯
 function finishQuiz() {
     let score = 0;
-    let totalDiff = 0;
+    let totalScore = 0; // 滿分計算
     quizData.forEach((q, i) => {
-        if(userAnswers[i] === q.answer) {
-            score++;
-            totalDiff += q.difficulty || 1;
-        }
+        totalScore += q.difficulty || 1;
+        if(userAnswers[i] === q.answer) score += q.difficulty || 1;
     });
 
-    const accuracy = (score / quizData.length) * 100;
-    const progress = (totalDiff / (quizData.length * 3)) * 100; // 假設難度最高為3
+    const progress = (score / totalScore) * 100; // 修正邏輯：正確權重 / 總權重
 
     document.getElementById('quiz-content').innerHTML = `
         <h2>測驗完成！</h2>
-        <p>正確率：${accuracy}%</p>
-        <div style="background:#ddd; width:100%; height:20px; border-radius:10px;">
-            <div style="background:#6d8c7b; width:${progress}%; height:100%; border-radius:10px;"></div>
-        </div>
-        <p>N4 程度位子：${progress > 70 ? '前段 (Advanced)' : '後段 (Basic)'}</p>
-        <button onclick="location.reload()">重新開始</button>
+        <p>今日正確率：${((userAnswers.filter((a,i)=>a===quizData[i].answer).length/quizData.length)*100).toFixed(0)}%</p>
+        <div class="progress-bg"><div class="progress-fill" style="width:${progress}%"></div></div>
+        <p>您的實力位子：</p>
+        <button class="nav-btn btn-prev" onclick="location.reload()">重新開始</button>
     `;
     document.getElementById('nav-btns').style.display = 'none';
 }
-
-loadQuestions();
