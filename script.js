@@ -57,30 +57,41 @@ function markButtons(selectedIdx, q) {
     });
 }
 
+function getExpertDiagnosis(score, wrongTypes) {
+    let expertAdvice = "<strong>【專家診斷分析】</strong><br>";
+    if (score >= 9) {
+        expertAdvice += "以現階段表現來看，您已具備穩定的 N4 溝通基礎。您對於基礎文法結構有良好的掌握力，能精準區分常見誤區。接下來建議開始嘗試接觸 N3 階段的短篇閱讀，提升語境辨識速度。";
+    } else if (score >= 7) {
+        expertAdvice += "您的實力正處於 N4 向上突破的關鍵期。目前在授受動詞與複合語法（如〜にくい、〜ばかり）的銜接上稍顯猶豫。建議針對本次錯題領域進行「回溯性練習」，徹底理解助詞在句型中的核心邏輯，而非死記硬背。";
+    } else {
+        expertAdvice += "分析您的作答軌跡，目前在基礎單字與文法連結上存在「斷層」。問題可能出在對動詞變化的掌握不夠透徹。建議先從 N5 核心動詞變化重新紮根，釐清「授受動詞」與「使役/被動」的邏輯關係，才能有效建立 N4 的應試信心。";
+    }
+    return expertAdvice;
+}
+
 function showResults() {
-    let score = 0, summary = { "單字": 0, "文法": 0, "克漏字": 0 }, total = { "單字": 0, "文法": 0, "克漏字": 0 };
+    let score = 0, wrongTypes = [];
     userAnswers.forEach((ans, i) => {
-        let type = quizData[i].type.includes("單字") ? "單字" : quizData[i].type;
-        total[type]++;
         if (ans === quizData[i].answer_index) score++;
-        else summary[type]++;
+        else wrongTypes.push(quizData[i].type);
     });
 
     const pct = Math.floor((score / quizData.length) * 100);
-    const bar = "█".repeat(Math.floor(pct / 10)) + "░".repeat(10 - Math.floor(pct / 10));
-    
-    let diagnosis = "診斷分析：";
-    for(let t in summary) {
-        if(summary[t] > 0) diagnosis += `<br>• ${t}：尚有進步空間，建議多複習該領域基礎架構。`;
-        else if(total[t] > 0) diagnosis += `<br>• ${t}：掌握良好！`;
-    }
 
     document.getElementById('quiz-content').innerHTML = `
         <div style="text-align: center; padding: 20px;">
-            <h2>今日得分：${score} / ${quizData.length}</h2>
-            <div style="margin: 20px 0; font-family: monospace; font-size: 20px;">${bar} ${pct}%</div>
-            <div style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px;">
-                <strong>${diagnosis}</strong>
+            <h2>今日小考題</h2>
+            <h3 style="margin: 10px 0;">測驗完成</h3>
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 30px 0;">
+                <div style="flex-grow: 1; height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; max-width: 300px;">
+                    <div style="width: ${pct}%; height: 100%; background: #6d8c7b; border-radius: 10px;"></div>
+                </div>
+                <span style="font-size: 24px; font-weight: bold;">${pct}%</span>
+            </div>
+
+            <div style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px; line-height: 1.6;">
+                ${getExpertDiagnosis(score, wrongTypes)}
             </div>
         </div>
     `;
