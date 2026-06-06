@@ -1,23 +1,89 @@
-console.log("=== 程式開始載入 ===");
+let quizData = [];
+let currentIdx = 0;
+let userAnswers = [];
 
-async function testInit() {
+async function loadQuestions() {
     try {
-        console.log("嘗試 fetch today.json...");
         const response = await fetch('today.json?t=' + new Date().getTime());
-        console.log("Fetch 狀態:", response.status);
-        
         const text = await response.text();
-        console.log("抓取到的內容長度:", text.length);
-        console.log("內容預覽:", text.substring(0, 50));
-        
-        const data = JSON.parse(text);
-        console.log("JSON 解析成功，題目共有:", data.length, "題");
-        
-        document.getElementById('quiz-content').innerHTML = "<h1>恭喜！程式運作正常，讀到了 " + data.length + " 題</h1>";
-    } catch (err) {
-        console.error("!!! 發現錯誤 !!!", err);
-        document.getElementById('quiz-content').innerHTML = "<h1>錯誤：請看 Console</h1><p>" + err.message + "</p>";
+        // 清除 Markdown 標記 (如果存在)
+        const cleanText = text.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
+        const rawData = JSON.parse(cleanText);
+
+        // 自動判斷結構：如果 rawData 是物件，找出裡面長度最長的陣列作為題目
+        if (Array.isArray(rawData)) {
+            quizData = rawData;
+        } else {
+            // 自動尋找物件中包含 "question" 的陣列
+            const keys = Object.keys(rawData);
+            const arrayKey = keys.find(k => Array.isArray(rawData[k]) && rawData[k].length > 0 && rawData[k][0].question);
+            quizData = arrayKey ? rawData[arrayKey] : [];
+        }
+
+        userAnswers = new Array(quizData.length).fill(null);
+        renderQuiz();
+    } catch (e) {
+        document.getElementById('quiz-content').innerHTML = "題目讀取錯誤：" + e.message;
     }
 }
 
-testInit();
+function renderQuiz() {
+    if (quizData.length === 0) {
+        document.getElementById('quiz-content').innerHTML = "目前沒有題目資料。";
+        return;
+    }
+    
+    const q = quizData[currentIdx];
+    const isSentence = q.question.length > 10 || q.type !== "單字";
+
+    const html = `
+        <div class="q-meta">[${q.type}] ${currentIdx + 1} / ${quizData.length}</div>
+        <div class="q-text" style="text-align: ${isSentence ? 'left' : 'center'}; font-size: 24px; margin: 20px 0;">
+            ${q.question}
+        </div>
+        <div class="options">
+            ${q.options.map((opt, i) => `
+                <button class="option-btn" onclick="submitAnswer(${i})" id="btn-${i}">${opt}</button>
+            `).join('')}
+        </div>
+        <div id="explanation-area" style="margin-top:20px; padding:15px; background:#fff8e1; border-radius:8px; display:none;">
+            <strong id="result-text"></strong><br>
+            <div id="exp-detail"></div>
+        </div>
+    `;
+    document.getElementById('quiz-content').innerHTML = html;
+}
+
+window.submitAnswer = function(i) {
+    if (userAnswers[currentIdx] !== null) return;
+    userAnswers[currentIdx] = i;
+    const isCorrect = (i === quizData[currentIdx].answer);
+    
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons[i].style.backgroundColor = isCorrect ? '#6d8c7b' : '#c62828';
+    buttons[i].style.color = 'white';
+    
+    document.getElementById('result-text').textContent = isCorrect ? "答對了！" : "答錯了QQ";
+    document.getElementById('exp-detail').innerHTML = quizData[currentIdx].explanation;
+    document.getElementById('explanation-area').style.display = 'block';
+};
+
+window.prevQuestion = function() { if(currentIdx > 0) { currentIdx--; renderQuiz(); } };
+window.nextQuestion = function() {
+    if(currentIdx < quizData.length - 1) { currentIdx++; renderQuiz(); }
+    else { finishQuiz(); }
+};
+
+function finishQuiz() {
+    let score = 0;
+    quizData.forEach((q, i) => { if(userAnswers[i] === q.answer) score++; });
+    const accuracy = ((score / quizData.length) * 100).toFixed(0);
+    document.getElementById('quiz-content').innerHTML = `
+        <h2>測驗完成！</h2>
+        <p>今日正確率：${accuracy}%</p>
+        <button class="nav-btn btn-prev" onclick="location.reload()">重新開始</button>
+    `;
+    document.getElementById('nav-btns').style.display = 'none';
+}
+
+loadQuestions();
