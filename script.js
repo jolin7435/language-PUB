@@ -6,26 +6,26 @@ async function loadQuestions() {
     try {
         const response = await fetch('today.json?t=' + new Date().getTime());
         const text = await response.text();
-        // 清除 Markdown 標記 (如果存在)
-        const cleanText = text.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
-        const rawData = JSON.parse(cleanText);
-
-        // 自動判斷結構：如果 rawData 是物件，找出裡面長度最長的陣列作為題目
+        const rawData = JSON.parse(text.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, ''));
+        
+        // --- 偵錯區塊 ---
+        console.log("資料內容:", rawData); 
+        console.log("資料類型:", typeof rawData);
+        // ----------------
+        
+        // 嘗試自動找陣列
         if (Array.isArray(rawData)) {
             quizData = rawData;
         } else {
-            // 自動尋找物件中包含 "question" 的陣列
-            const keys = Object.keys(rawData);
-            const arrayKey = keys.find(k => Array.isArray(rawData[k]) && rawData[k].length > 0 && rawData[k][0].question);
-            quizData = arrayKey ? rawData[arrayKey] : [];
+            // 如果還是找不到，請看 Console 的 [資料內容] 是什麼
+            quizData = []; 
         }
-
-        userAnswers = new Array(quizData.length).fill(null);
+        
         renderQuiz();
     } catch (e) {
-        document.getElementById('quiz-content').innerHTML = "題目讀取錯誤：" + e.message;
+        document.getElementById('quiz-content').innerHTML = "解析錯誤: " + e.message;
     }
-}
+}}
 
 function renderQuiz() {
     if (quizData.length === 0) {
