@@ -28,24 +28,24 @@ function renderQuiz() {
             <div class="q-meta" style="color: #666; margin-bottom: 15px; font-size: 16px;">
                 [${q.type}] 第 ${currentIdx + 1} / ${quizData.length} 題
             </div>
-            <div class="q-text" style="text-align: ${q.alignment || 'center'}; font-size: 24px; font-weight: bold; margin: 20px 0; color: #333;">
-                ${q.word}
+            <div class="q-text" style="text-align: ${q.alignment || 'center'}; font-size: 22px; font-weight: bold; margin: 20px 0; color: #333;">
+                ${q.word}<br>
+                ${q.translation ? `<div style="font-size: 16px; color: #666; margin-top:10px;">${q.translation}</div>` : ''}
             </div>
         </div>
         <div class="options">
             ${q.options.map((opt, i) => `
-                <button class="option-btn" onclick="submitAnswer(${i})" id="btn-${i}" 
-                    style="display:block; width:100%; margin-bottom:10px; padding:12px; cursor:pointer;"
-                    ${savedAnswer !== null ? 'disabled' : ''}>${opt}</button>
+                <button class="option-btn" onclick="submitAnswer(${i})" ${savedAnswer !== null ? 'disabled' : ''}
+                    style="display:block; width:100%; margin-bottom:10px; padding:12px; cursor:pointer;">${opt}</button>
             `).join('')}
         </div>
         <div id="explanation-area" style="margin-top:20px; padding:15px; background:#fff8e1; border-radius:8px; display:${savedAnswer !== null ? 'block' : 'none'};">
-            <strong id="result-text" style="font-size: 18px;">${savedAnswer !== null ? (savedAnswer === q.answer_index ? "答對了！" : "答錯了QQ") : ""}</strong><br>
-            <div id="exp-detail" style="margin-top: 8px;">${savedAnswer !== null ? q.explanation : ""}</div>
+            <strong>${savedAnswer !== null ? (savedAnswer === q.answer_index ? "答對了！" : "答錯了QQ") : ""}</strong><br>
+            <div style="margin-top: 8px;">${q.explanation || ''}</div>
+            ${q.explanation_zh ? `<div style="margin-top: 5px; color: #555;">(翻譯：${q.explanation_zh})</div>` : ''}
         </div>
     `;
     document.getElementById('quiz-content').innerHTML = html;
-    
     if (savedAnswer !== null) markButtons(savedAnswer, q);
 }
 
@@ -54,71 +54,44 @@ function markButtons(selectedIdx, q) {
         btn.disabled = true;
         if(idx === q.answer_index) btn.style.backgroundColor = '#6d8c7b';
         else if(idx === selectedIdx && selectedIdx !== q.answer_index) btn.style.backgroundColor = '#c62828';
-        if (idx !== q.answer_index && idx !== selectedIdx) btn.style.opacity = '0.7';
     });
 }
-
-function getProgressInfo(score) {
-    let pct = 0, label = "尚未具備 N4 水準";
-    if (score === 10) { pct = 100; label = "具備 N4 以上實力"; }
-    else if (score === 9) { pct = 90; label = "穩定達到 N4 水準"; }
-    else if (score === 8) { pct = 75; label = "達到 N4 合格邊緣"; }
-    else if (score >= 6) { pct = 50; label = "約 N5-N4 實力"; }
-    else { pct = 30; label = "尚未具備 N4 水準"; }
-    
-    const barBlocks = Math.floor(pct / 10);
-    const bar = "█".repeat(barBlocks) + "░".repeat(10 - barBlocks);
-    return { bar, pct, label };
-}
-
-window.submitAnswer = function(i) {
-    userAnswers[currentIdx] = i;
-    renderQuiz();
-};
-
-window.prevQuestion = function() {
-    if(currentIdx > 0) {
-        currentIdx--;
-        isFinished = false;
-        renderQuiz();
-    }
-};
-
-window.nextQuestion = function() {
-    if(currentIdx < quizData.length - 1) {
-        currentIdx++;
-        renderQuiz();
-    } else {
-        isFinished = true;
-        renderQuiz();
-    }
-};
 
 function showResults() {
-    let score = 0, wrongTypes = [];
+    let score = 0, summary = { "單字": 0, "文法": 0, "克漏字": 0 }, total = { "單字": 0, "文法": 0, "克漏字": 0 };
     userAnswers.forEach((ans, i) => {
+        let type = quizData[i].type.includes("單字") ? "單字" : quizData[i].type;
+        total[type]++;
         if (ans === quizData[i].answer_index) score++;
-        else wrongTypes.push(quizData[i].type);
+        else summary[type]++;
     });
+
+    const pct = Math.floor((score / quizData.length) * 100);
+    const bar = "█".repeat(Math.floor(pct / 10)) + "░".repeat(10 - Math.floor(pct / 10));
     
-    const info = getProgressInfo(score);
-    const diagnosis = wrongTypes.length === 0 ? "表現優異，無明顯弱點！" : `需加強領域：${[...new Set(wrongTypes)].join('、')}。建議回顧相關文法與單字。`;
+    let diagnosis = "診斷分析：";
+    for(let t in summary) {
+        if(summary[t] > 0) diagnosis += `<br>• ${t}：尚有進步空間，建議多複習該領域基礎架構。`;
+        else if(total[t] > 0) diagnosis += `<br>• ${t}：掌握良好！`;
+    }
 
     document.getElementById('quiz-content').innerHTML = `
         <div style="text-align: center; padding: 20px;">
-            <h2>測驗完成！</h2>
-            <div style="font-size: 20px; margin: 15px 0;">
-                <div>${info.bar} ${info.pct}%</div>
-                <div style="font-size: 14px; color: #555;">實力落點：${info.label}</div>
-            </div>
-            <div style="background: #f4f4f4; padding: 15px; border-radius: 8px; text-align: left;">
-                <p><strong>強弱項診斷：</strong><br>${diagnosis}</p>
+            <h2>今日得分：${score} / ${quizData.length}</h2>
+            <div style="margin: 20px 0; font-family: monospace; font-size: 20px;">${bar} ${pct}%</div>
+            <div style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                <strong>${diagnosis}</strong>
             </div>
         </div>
     `;
-    // 更新按鈕文字：將「下一題」改為「重新開始」
-    document.querySelector('button[onclick="nextQuestion()"]').textContent = "重新開始";
-    document.querySelector('button[onclick="nextQuestion()"]').onclick = () => location.reload();
 }
+
+window.submitAnswer = (i) => { userAnswers[currentIdx] = i; renderQuiz(); };
+window.prevQuestion = () => { if(currentIdx > 0) { currentIdx--; isFinished = false; renderQuiz(); } };
+window.nextQuestion = () => {
+    if (isFinished) { location.reload(); return; }
+    if (currentIdx < quizData.length - 1) { currentIdx++; renderQuiz(); }
+    else { isFinished = true; renderQuiz(); }
+};
 
 loadQuestions();
