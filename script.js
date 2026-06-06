@@ -9,6 +9,7 @@ async function loadQuestions() {
         const raw = await response.json();
         quizData = raw.quiz || [];
         if (quizData.length === 0) throw new Error("找不到題目");
+        
         userAnswers = new Array(quizData.length).fill(null);
         renderQuiz();
     } catch (e) {
@@ -17,29 +18,17 @@ async function loadQuestions() {
 }
 
 function renderQuiz() {
-    if (isFinished) {
-        showResults();
-        return;
-    }
+    if (isFinished) return showResults();
 
     const q = quizData[currentIdx];
     const savedAnswer = userAnswers[currentIdx];
-
-    // 1. 片假名處理：如果 JSON 有 furigana 欄位則顯示
-    const furiganaHtml = q.furigana ? `<div style="font-size: 16px; color: #555; margin-bottom: 5px;">(${q.furigana})</div>` : '';
-    
-    // 2. 強制換行處理：利用 display: block 與 border-top 確保獨立一行
-    const translationBlock = q.explanation_zh 
-        ? `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc; display: block; width: 100%; color: #555;">句意為：${q.explanation_zh}</div>` 
-        : '';
 
     const html = `
         <div style="text-align: center;">
             <div class="q-meta" style="color: #666; margin-bottom: 15px; font-size: 16px;">
                 [${q.type}] 第 ${currentIdx + 1} / ${quizData.length} 題
             </div>
-            <div class="q-text" style="text-align: center; font-size: 22px; font-weight: bold; margin: 20px 0; color: #333;">
-                ${furiganaHtml}
+            <div class="q-text" style="text-align: ${q.alignment || 'center'}; font-size: 22px; font-weight: bold; margin: 20px 0; color: #333;">
                 ${q.word}<br>
                 ${q.translation ? `<div style="font-size: 16px; color: #666; margin-top:10px;">${q.translation}</div>` : ''}
             </div>
@@ -51,23 +40,13 @@ function renderQuiz() {
             `).join('')}
         </div>
         <div id="explanation-area" style="margin-top:20px; padding:15px; background:#fff8e1; border-radius:8px; display:${savedAnswer !== null ? 'block' : 'none'};">
-            <strong>${savedAnswer !== null ? (savedAnswer === q.answer_index ? "答對了！" : "答錯了QQ") : ""}</strong>
+            <strong>${savedAnswer !== null ? (savedAnswer === q.answer_index ? "答對了！" : "答錯了QQ") : ""}</strong><br>
             <div style="margin-top: 8px;">${q.explanation || ''}</div>
-            ${translationBlock}
-        </div>
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
-            <button onclick="prevQuestion()" style="flex:1; padding: 12px;">← 上一題</button>
-            <button id="next-btn" onclick="nextQuestion()" style="flex:1; padding: 12px;">下一題 →</button>
+            ${q.explanation_zh ? `<div style="margin-top: 5px; color: #555;">(翻譯：${q.explanation_zh})</div>` : ''}
         </div>
     `;
-    
     document.getElementById('quiz-content').innerHTML = html;
     if (savedAnswer !== null) markButtons(savedAnswer, q);
-    
-    // 檢查是否為最後一題，如果是，將按鈕改為「重新開始」
-    if (currentIdx === quizData.length - 1) {
-        document.getElementById('next-btn').textContent = "重新開始";
-    }
 }
 
 function markButtons(selectedIdx, q) {
@@ -78,32 +57,52 @@ function markButtons(selectedIdx, q) {
     });
 }
 
+function getExpertDiagnosis(score, wrongTypes) {
+    let expertAdvice = "<strong>【專家診斷分析】</strong><br>";
+    if (score >= 9) {
+        expertAdvice += "以現階段表現來看，您已具備穩定的 N4 溝通基礎。您對於基礎文法結構有良好的掌握力，能精準區分常見誤區。接下來建議開始嘗試接觸 N3 階段的短篇閱讀，提升語境辨識速度。";
+    } else if (score >= 7) {
+        expertAdvice += "您的實力正處於 N4 向上突破的關鍵期。目前在授受動詞與複合語法（如〜にくい、〜ばかり）的銜接上稍顯猶豫。建議針對本次錯題領域進行「回溯性練習」，徹底理解助詞在句型中的核心邏輯，而非死記硬背。";
+    } else {
+        expertAdvice += "分析您的作答軌跡，目前在基礎單字與文法連結上存在「斷層」。問題可能出在對動詞變化的掌握不夠透徹。建議先從 N5 核心動詞變化重新紮根，釐清「授受動詞」與「使役/被動」的邏輯關係，才能有效建立 N4 的應試信心。";
+    }
+    return expertAdvice;
+}
+
 function showResults() {
-    let score = 0;
-    userAnswers.forEach((ans, i) => { if (ans === quizData[i].answer_index) score++; });
+    let score = 0, wrongTypes = [];
+    userAnswers.forEach((ans, i) => {
+        if (ans === quizData[i].answer_index) score++;
+        else wrongTypes.push(quizData[i].type);
+    });
+
     const pct = Math.floor((score / quizData.length) * 100);
 
     document.getElementById('quiz-content').innerHTML = `
         <div style="text-align: center; padding: 20px;">
-            <h2>測驗完成</h2>
-            <div style="margin: 30px 0; font-size: 24px; font-weight: bold;">得分：${pct}%</div>
-            <button onclick="location.reload()" style="padding: 12px 30px; cursor: pointer;">重新開始</button>
+            <h2>今日小考題</h2>
+            <h3 style="margin: 10px 0;">測驗完成</h3>
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 30px 0;">
+                <div style="flex-grow: 1; height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; max-width: 300px;">
+                    <div style="width: ${pct}%; height: 100%; background: #6d8c7b; border-radius: 10px;"></div>
+                </div>
+                <span style="font-size: 24px; font-weight: bold;">${pct}%</span>
+            </div>
+
+            <div style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px; line-height: 1.6;">
+                ${getExpertDiagnosis(score, wrongTypes)}
+            </div>
         </div>
     `;
 }
 
 window.submitAnswer = (i) => { userAnswers[currentIdx] = i; renderQuiz(); };
-window.prevQuestion = () => { 
-    if(currentIdx > 0) { currentIdx--; isFinished = false; renderQuiz(); } 
-};
+window.prevQuestion = () => { if(currentIdx > 0) { currentIdx--; isFinished = false; renderQuiz(); } };
 window.nextQuestion = () => {
-    if (currentIdx < quizData.length - 1) { 
-        currentIdx++; 
-        renderQuiz(); 
-    } else { 
-        isFinished = true; 
-        showResults(); // 強制跳轉至完成頁
-    }
+    if (isFinished) { location.reload(); return; }
+    if (currentIdx < quizData.length - 1) { currentIdx++; renderQuiz(); }
+    else { isFinished = true; renderQuiz(); }
 };
 
 loadQuestions();
