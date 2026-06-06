@@ -2,35 +2,45 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>今日小考題</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* 基礎佈局樣式，確保視覺統一 */
-        body { font-family: 'Noto Sans JP', sans-serif; background: #f4f7f6; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #1a2b4b; text-align: center; }
-        .hidden { display: none; }
+        :root {
+            --primary: #5f6f52; /* 橄欖綠 */
+            --secondary: #b99470; /* 土色 */
+            --bg: #f9f7f2; /* 米色底 */
+        }
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .container { max-width: 500px; width: 100%; background: #fffdf9; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        
+        .option-btn {
+            display: block; width: 100%; padding: 15px; margin: 10px 0;
+            background-color: var(--secondary); color: white; border: none;
+            border-radius: 10px; cursor: pointer; font-size: 18px; transition: 0.3s;
+        }
+        .option-btn:hover { opacity: 0.9; }
+        
+        .nav-container { display: flex; gap: 10px; margin-top: 20px; }
+        .nav-btn { flex: 1; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; color: white; background: #666; }
+        
+        /* 確保動態內容顯示正確 */
+        #quiz-content { min-height: 300px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>今日小考題</h1>
-    <div id="quiz-app">
-        <div id="quiz-content"></div>
-        <div id="nav-btns" style="margin-top: 20px; text-align: center;">
-            <button onclick="prevQuestion()" id="prev-btn">上一題</button>
-            <button onclick="nextQuestion()" id="next-btn">下一題</button>
+    <div id="quiz-content">
         </div>
+    <div id="nav-btns" class="nav-container">
+        <button class="nav-btn" onclick="prevQuestion()" style="background: #8b7d72;">⬅ 上一題</button>
+        <button class="nav-btn" onclick="nextQuestion()" style="background: #5f6f52;">下一題 ➡</button>
     </div>
 </div>
 
-<script>
-    document.write('<script src="script.js?t=' + new Date().getTime() + '"><\/script>');
-</script>
+<script src="script.js"></script>
 </body>
 </html>
