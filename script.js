@@ -9,7 +9,6 @@ async function loadQuestions() {
         const raw = await response.json();
         quizData = raw.quiz || [];
         if (quizData.length === 0) throw new Error("找不到題目");
-        
         userAnswers = new Array(quizData.length).fill(null);
         renderQuiz();
     } catch (e) {
@@ -26,9 +25,12 @@ function renderQuiz() {
     const q = quizData[currentIdx];
     const savedAnswer = userAnswers[currentIdx];
 
-    // 強制換行處理：利用 <div style="display:block"> 強制將句意移至新的一行
+    // 1. 片假名處理：如果 JSON 有 furigana 欄位則顯示
+    const furiganaHtml = q.furigana ? `<div style="font-size: 16px; color: #555; margin-bottom: 5px;">(${q.furigana})</div>` : '';
+    
+    // 2. 強制換行處理：利用 display: block 與 border-top 確保獨立一行
     const translationBlock = q.explanation_zh 
-        ? `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc; display: block; color: #555;">句意為：${q.explanation_zh}</div>` 
+        ? `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc; display: block; width: 100%; color: #555;">句意為：${q.explanation_zh}</div>` 
         : '';
 
     const html = `
@@ -36,7 +38,8 @@ function renderQuiz() {
             <div class="q-meta" style="color: #666; margin-bottom: 15px; font-size: 16px;">
                 [${q.type}] 第 ${currentIdx + 1} / ${quizData.length} 題
             </div>
-            <div class="q-text" style="font-size: 22px; font-weight: bold; margin: 20px 0; color: #333;">
+            <div class="q-text" style="text-align: center; font-size: 22px; font-weight: bold; margin: 20px 0; color: #333;">
+                ${furiganaHtml}
                 ${q.word}<br>
                 ${q.translation ? `<div style="font-size: 16px; color: #666; margin-top:10px;">${q.translation}</div>` : ''}
             </div>
@@ -54,11 +57,17 @@ function renderQuiz() {
         </div>
         <div style="margin-top: 20px; display: flex; gap: 10px;">
             <button onclick="prevQuestion()" style="flex:1; padding: 12px;">← 上一題</button>
-            <button onclick="nextQuestion()" style="flex:1; padding: 12px;">下一題 →</button>
+            <button id="next-btn" onclick="nextQuestion()" style="flex:1; padding: 12px;">下一題 →</button>
         </div>
     `;
+    
     document.getElementById('quiz-content').innerHTML = html;
     if (savedAnswer !== null) markButtons(savedAnswer, q);
+    
+    // 檢查是否為最後一題，如果是，將按鈕改為「重新開始」
+    if (currentIdx === quizData.length - 1) {
+        document.getElementById('next-btn').textContent = "重新開始";
+    }
 }
 
 function markButtons(selectedIdx, q) {
@@ -74,25 +83,26 @@ function showResults() {
     userAnswers.forEach((ans, i) => { if (ans === quizData[i].answer_index) score++; });
     const pct = Math.floor((score / quizData.length) * 100);
 
-    // 這裡明確寫出完成頁的 HTML，確保不會消失
     document.getElementById('quiz-content').innerHTML = `
         <div style="text-align: center; padding: 20px;">
             <h2>測驗完成</h2>
-            <div style="margin: 20px 0; font-size: 20px;">得分：${pct}%</div>
+            <div style="margin: 30px 0; font-size: 24px; font-weight: bold;">得分：${pct}%</div>
             <button onclick="location.reload()" style="padding: 12px 30px; cursor: pointer;">重新開始</button>
         </div>
     `;
 }
 
 window.submitAnswer = (i) => { userAnswers[currentIdx] = i; renderQuiz(); };
-window.prevQuestion = () => { if(currentIdx > 0) { currentIdx--; isFinished = false; renderQuiz(); } };
+window.prevQuestion = () => { 
+    if(currentIdx > 0) { currentIdx--; isFinished = false; renderQuiz(); } 
+};
 window.nextQuestion = () => {
     if (currentIdx < quizData.length - 1) { 
         currentIdx++; 
         renderQuiz(); 
     } else { 
         isFinished = true; 
-        showResults(); // 確保進入最後一頁
+        showResults(); // 強制跳轉至完成頁
     }
 };
 
