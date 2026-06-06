@@ -1,7 +1,7 @@
 let quizData = [];
 let currentIdx = 0;
-let userAnswers = []; // 儲存使用者紀錄，null 代表未作答
-let isFinished = false; // 新增狀態：是否已結束測驗
+let userAnswers = [];
+let isFinished = false;
 
 async function loadQuestions() {
     try {
@@ -22,13 +22,9 @@ function renderQuiz() {
 
     const q = quizData[currentIdx];
     const savedAnswer = userAnswers[currentIdx];
-    
-    // 計算進度百分比 (0 到 100)
-    const progress = (currentIdx / quizData.length) * 100;
 
     const html = `
         <div style="text-align: center;">
-            <div style="margin-bottom: 10px; font-weight: bold;">0 <progress value="${progress}" max="100" style="width: 60%;"></progress> N4</div>
             <div class="q-meta" style="color: #666; margin-bottom: 15px; font-size: 16px;">
                 [${q.type}] 第 ${currentIdx + 1} / ${quizData.length} 題
             </div>
@@ -50,10 +46,7 @@ function renderQuiz() {
     `;
     document.getElementById('quiz-content').innerHTML = html;
     
-    // 若已作答，自動標記正確/錯誤顏色
-    if (savedAnswer !== null) {
-        markButtons(savedAnswer, q);
-    }
+    if (savedAnswer !== null) markButtons(savedAnswer, q);
 }
 
 function markButtons(selectedIdx, q) {
@@ -65,6 +58,19 @@ function markButtons(selectedIdx, q) {
     });
 }
 
+function getProgressInfo(score) {
+    let pct = 0, label = "尚未具備 N4 水準";
+    if (score === 10) { pct = 100; label = "具備 N4 以上實力"; }
+    else if (score === 9) { pct = 90; label = "穩定達到 N4 水準"; }
+    else if (score === 8) { pct = 75; label = "達到 N4 合格邊緣"; }
+    else if (score >= 6) { pct = 50; label = "約 N5-N4 實力"; }
+    else { pct = 30; label = "尚未具備 N4 水準"; }
+    
+    const barBlocks = Math.floor(pct / 10);
+    const bar = "█".repeat(barBlocks) + "░".repeat(10 - barBlocks);
+    return { bar, pct, label };
+}
+
 window.submitAnswer = function(i) {
     userAnswers[currentIdx] = i;
     renderQuiz();
@@ -73,7 +79,7 @@ window.submitAnswer = function(i) {
 window.prevQuestion = function() {
     if(currentIdx > 0) {
         currentIdx--;
-        isFinished = false; // 回到題目頁
+        isFinished = false;
         renderQuiz();
     }
 };
@@ -84,23 +90,35 @@ window.nextQuestion = function() {
         renderQuiz();
     } else {
         isFinished = true;
-        showResults();
+        renderQuiz();
     }
 };
 
 function showResults() {
-    let score = 0;
-    userAnswers.forEach((ans, i) => { if (ans === quizData[i].answer_index) score++; });
-    const accuracy = ((score / quizData.length) * 100).toFixed(0);
+    let score = 0, wrongTypes = [];
+    userAnswers.forEach((ans, i) => {
+        if (ans === quizData[i].answer_index) score++;
+        else wrongTypes.push(quizData[i].type);
+    });
     
+    const info = getProgressInfo(score);
+    const diagnosis = wrongTypes.length === 0 ? "表現優異，無明顯弱點！" : `需加強領域：${[...new Set(wrongTypes)].join('、')}。建議回顧相關文法與單字。`;
+
     document.getElementById('quiz-content').innerHTML = `
-        <div style="text-align: center; padding: 40px 20px;">
-            <h2 style="font-size: 28px;">測驗完成！</h2>
-            <p style="font-size: 20px;">您的最終正確率：${accuracy}% (${score} / ${quizData.length})</p>
-            <button onclick="prevQuestion()" style="margin: 10px; padding: 10px 20px; cursor: pointer;">上一題</button>
-            <button onclick="location.reload()" style="margin: 10px; padding: 10px 20px; cursor: pointer;">重新開始</button>
+        <div style="text-align: center; padding: 20px;">
+            <h2>測驗完成！</h2>
+            <div style="font-size: 20px; margin: 15px 0;">
+                <div>${info.bar} ${info.pct}%</div>
+                <div style="font-size: 14px; color: #555;">實力落點：${info.label}</div>
+            </div>
+            <div style="background: #f4f4f4; padding: 15px; border-radius: 8px; text-align: left;">
+                <p><strong>強弱項診斷：</strong><br>${diagnosis}</p>
+            </div>
         </div>
     `;
+    // 更新按鈕文字：將「下一題」改為「重新開始」
+    document.querySelector('button[onclick="nextQuestion()"]').textContent = "重新開始";
+    document.querySelector('button[onclick="nextQuestion()"]').onclick = () => location.reload();
 }
 
 loadQuestions();
