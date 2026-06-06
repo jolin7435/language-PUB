@@ -5,16 +5,25 @@ let userAnswers = [];
 async function loadQuestions() {
     try {
         const response = await fetch('today.json?t=' + new Date().getTime());
-        const text = await response.text();
-        // 清除任何可能的非法字元
-        const cleanText = text.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
-        quizData = JSON.parse(cleanText);
+        if (!response.ok) throw new Error("無法連接到 today.json");
+        
+        const data = await response.json();
+        
+        // 確保讀到的是陣列
+        if (Array.isArray(data)) {
+            quizData = data;
+        } else if (data.questions && Array.isArray(data.questions)) {
+            quizData = data.questions;
+        } else {
+            throw new Error("JSON 格式不符：找不到陣列");
+        }
         
         userAnswers = new Array(quizData.length).fill(null);
+        currentIdx = 0; // 確保從第一題開始
         renderQuiz();
     } catch (e) {
         console.error("載入失敗:", e);
-        document.getElementById('quiz-content').innerHTML = "載入題目失敗，請確認 today.json 格式。";
+        document.getElementById('quiz-content').innerHTML = "載入題目失敗，請確認 today.json 格式正確。";
     }
 }
 
