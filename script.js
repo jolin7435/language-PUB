@@ -20,12 +20,16 @@ async function loadQuestions() {
 function renderQuiz() {
     if (isFinished) {
         showResults();
-        updateNextButtonText(); // 確保進入結果頁時文字更新
         return;
     }
 
     const q = quizData[currentIdx];
     const savedAnswer = userAnswers[currentIdx];
+
+    // 換行邏輯：若有翻譯，前方強制插入 <br>
+    const explanationZhHtml = q.explanation_zh 
+        ? `<br><div style="margin-top: 5px; padding-top: 10px; border-top: 1px dashed #ccc; color: #555;">句意為：${q.explanation_zh}</div>` 
+        : '';
 
     const html = `
         <div style="text-align: center;">
@@ -46,26 +50,11 @@ function renderQuiz() {
         <div id="explanation-area" style="margin-top:20px; padding:15px; background:#fff8e1; border-radius:8px; display:${savedAnswer !== null ? 'block' : 'none'};">
             <strong>${savedAnswer !== null ? (savedAnswer === q.answer_index ? "答對了！" : "答錯了QQ") : ""}</strong><br>
             <div style="margin-top: 8px;">${q.explanation || ''}</div>
-            ${q.explanation_zh ? `<br><div style="margin-top: 5px; padding-top: 10px; border-top: 1px dashed #ccc; color: #555;">句意為：${q.explanation_zh}</div>` : ''}
+            ${explanationZhHtml}
         </div>
     `;
     document.getElementById('quiz-content').innerHTML = html;
     if (savedAnswer !== null) markButtons(savedAnswer, q);
-    
-    // 每次渲染題目時，確保按鈕文字改回「下一題」
-    updateNextButtonText();
-}
-
-// 輔助函式：負責統一管理「下一題/重新開始」的文字切換
-function updateNextButtonText() {
-    const nextBtn = document.querySelector('button[onclick="nextQuestion()"]');
-    if (!nextBtn) return;
-    
-    if (isFinished) {
-        nextBtn.textContent = "重新開始";
-    } else {
-        nextBtn.textContent = "下一題";
-    }
 }
 
 function markButtons(selectedIdx, q) {
@@ -79,11 +68,11 @@ function markButtons(selectedIdx, q) {
 function getExpertDiagnosis(score) {
     let expertAdvice = "<strong>【專家診斷分析】</strong><br>";
     if (score >= 9) {
-        expertAdvice += "以現階段表現來看，您已具備穩定的 N4 溝通基礎。您對於基礎文法結構有良好的掌握力，能精準區分常見誤區。接下來建議開始嘗試接觸 N3 階段的短篇閱讀，提升語境辨識速度。";
+        expertAdvice += "以現階段表現來看，您已具備穩定的 N4 溝通基礎。";
     } else if (score >= 7) {
-        expertAdvice += "您的實力正處於 N4 向上突破的關鍵期。目前在授受動詞與複合語法（如〜にくい、〜ばかり）的銜接上稍顯猶豫。建議針對本次錯題領域進行「回溯性練習」，徹底理解助詞在句型中的核心邏輯，而非死記硬背。";
+        expertAdvice += "您的實力正處於 N4 向上突破的關鍵期。";
     } else {
-        expertAdvice += "分析您的作答軌跡，目前在基礎單字與文法連結上存在「斷層」。建議先從 N5 核心動詞變化重新紮根，釐清「授受動詞」與「使役/被動」的邏輯關係，才能有效建立 N4 的應試信心。";
+        expertAdvice += "分析您的作答軌跡，目前在基礎單字與文法連結上存在「斷層」。";
     }
     return expertAdvice;
 }
@@ -91,7 +80,6 @@ function getExpertDiagnosis(score) {
 function showResults() {
     let score = 0;
     userAnswers.forEach((ans, i) => { if (ans === quizData[i].answer_index) score++; });
-
     const pct = Math.floor((score / quizData.length) * 100);
 
     document.getElementById('quiz-content').innerHTML = `
@@ -108,6 +96,14 @@ function showResults() {
             </div>
         </div>
     `;
+    
+    // 只在 showResults (最後一頁) 執行，透過 setTimeout 確保 DOM 已渲染
+    setTimeout(() => {
+        const nextBtn = Array.from(document.querySelectorAll('button')).find(btn => 
+            btn.textContent.includes('下一題') || btn.getAttribute('onclick')?.includes('nextQuestion()')
+        );
+        if (nextBtn) nextBtn.textContent = "重新開始";
+    }, 0);
 }
 
 window.submitAnswer = (i) => { userAnswers[currentIdx] = i; renderQuiz(); };
