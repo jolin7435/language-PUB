@@ -1,84 +1,23 @@
-let quizData = [];
-let currentIdx = 0;
-let userAnswers = [];
+console.log("=== 程式開始載入 ===");
 
-async function loadQuestions() {
-    console.log("開始載入題目..."); // 看看這一行有沒有出現
+async function testInit() {
     try {
+        console.log("嘗試 fetch today.json...");
         const response = await fetch('today.json?t=' + new Date().getTime());
-        console.log("Fetch 請求完成，狀態碼:", response.status); 
+        console.log("Fetch 狀態:", response.status);
         
         const text = await response.text();
-        console.log("讀取到的原始資料:", text); // 看看這裡是不是空的，或者是不是錯誤的 HTML
+        console.log("抓取到的內容長度:", text.length);
+        console.log("內容預覽:", text.substring(0, 50));
         
-        quizData = JSON.parse(text); 
-        console.log("JSON 解析成功，題目數量:", quizData.length);
+        const data = JSON.parse(text);
+        console.log("JSON 解析成功，題目共有:", data.length, "題");
         
-        userAnswers = new Array(quizData.length).fill(null);
-        renderQuiz();
-    } catch (e) {
-        console.error("出錯了！錯誤原因:", e);
-        document.getElementById('quiz-content').innerHTML = "出錯了，請查看 Console 錯誤訊息";
+        document.getElementById('quiz-content').innerHTML = "<h1>恭喜！程式運作正常，讀到了 " + data.length + " 題</h1>";
+    } catch (err) {
+        console.error("!!! 發現錯誤 !!!", err);
+        document.getElementById('quiz-content').innerHTML = "<h1>錯誤：請看 Console</h1><p>" + err.message + "</p>";
     }
 }
 
-function renderQuiz() {
-    const q = quizData[currentIdx];
-    const isSentence = q.question.length > 15; // 簡單判定：字數超過15字視為句子
-
-    const html = `
-        <div class="q-meta">[${q.type}] ${currentIdx + 1} / ${quizData.length}</div>
-        <div class="q-text" style="text-align: ${isSentence ? 'left' : 'center'}; font-size: 24px; margin: 20px 0;">
-            ${q.question}
-        </div>
-        <div class="options">
-            ${q.options.map((opt, i) => `
-                <button class="option-btn" onclick="submitAnswer(${i})" id="btn-${i}">${opt}</button>
-            `).join('')}
-        </div>
-        <div id="explanation-area" style="margin-top:20px; padding:15px; background:#fff8e1; border-radius:8px; display:none;">
-            <strong id="result-text"></strong><br>
-            <div id="exp-detail"></div>
-        </div>
-    `;
-    document.getElementById('quiz-content').innerHTML = html;
-}
-
-window.submitAnswer = function(i) {
-    if (userAnswers[currentIdx] !== null) return; // 防止重複作答
-    userAnswers[currentIdx] = i;
-    
-    const isCorrect = (i === quizData[currentIdx].answer);
-    const buttons = document.querySelectorAll('.option-btn');
-    
-    // 顏色處理
-    buttons[i].style.backgroundColor = isCorrect ? '#6d8c7b' : '#c62828'; // 綠色或紅色
-    
-    // 解析欄位顯示
-    const expArea = document.getElementById('explanation-area');
-    document.getElementById('result-text').textContent = isCorrect ? "答對了！" : "答錯了QQ";
-    document.getElementById('exp-detail').innerHTML = quizData[currentIdx].explanation;
-    expArea.style.display = 'block';
-};
-
-// ... (prevQuestion 與 nextQuestion 邏輯不變)
-// 修正後的 finishQuiz 邏輯
-function finishQuiz() {
-    let score = 0;
-    let totalScore = 0; // 滿分計算
-    quizData.forEach((q, i) => {
-        totalScore += q.difficulty || 1;
-        if(userAnswers[i] === q.answer) score += q.difficulty || 1;
-    });
-
-    const progress = (score / totalScore) * 100; // 修正邏輯：正確權重 / 總權重
-
-    document.getElementById('quiz-content').innerHTML = `
-        <h2>測驗完成！</h2>
-        <p>今日正確率：${((userAnswers.filter((a,i)=>a===quizData[i].answer).length/quizData.length)*100).toFixed(0)}%</p>
-        <div class="progress-bg"><div class="progress-fill" style="width:${progress}%"></div></div>
-        <p>您的實力位子：</p>
-        <button class="nav-btn btn-prev" onclick="location.reload()">重新開始</button>
-    `;
-    document.getElementById('nav-btns').style.display = 'none';
-}
+testInit();
